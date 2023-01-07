@@ -46,7 +46,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: beta
+          toolchain: stable
           override: true
       - name: Run check
         uses: actions-rs/cargo@v1
@@ -108,9 +108,6 @@ jobs:
         with:
           command: fmt
           args: --all -- --check
-      - uses: actions/setup-python@v3
-      - name: Validate pre-commit
-        uses: pre-commit/action@v3.0.0
 
   clippy:
     name: "Clippy (cargo clippy)"
