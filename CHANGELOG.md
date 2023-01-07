@@ -6,6 +6,8 @@
 
 - Added pretty printing for hex and JSON output
 - CLI now defaults to hex input when specifying `-i -j`
+- Added makefile for easier installing
+- [test] added integration tests
 
 
 ## [0.1.0] - 2023-01-07
