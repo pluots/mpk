@@ -2,6 +2,13 @@
 
 This is a simple CLI for converting between MessagePack and JSON.
 
+
+## Installing
+
+The easiest way to install is to go the [releases] page 
+
+[releases]: https://github.com/pluots/msgpack-cli/releases
+
 ## Usage
 
 Usage is very simple:

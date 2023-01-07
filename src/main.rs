@@ -3,18 +3,19 @@
 #![warn(clippy::nursery)]
 #![warn(clippy::str_to_string)]
 
-use clap::Parser;
-use std::fmt;
-use std::fs;
-use std::io;
+mod cli;
+
 use std::io::{Read, Write};
 use std::path::Path;
 use std::process::ExitCode;
 use std::sync::atomic::{AtomicBool, Ordering};
-mod cli;
+use std::{fmt, fs, io};
+
+use clap::Parser;
 use cli::Args;
 
-/// Store our verbosity level
+/// Store our verbosity level in a global just to make things easy
+// FIXME: Replace with a OnceLock once that is available
 static VERBOSITY: AtomicBool = AtomicBool::new(false);
 
 /// Print to stderr if verbose mode is on

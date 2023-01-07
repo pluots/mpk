@@ -3,10 +3,13 @@ name = "msgpack-cli"
 version = "0.1.0"
 edition = "2021"
 license = "Apache-2.0"
-repository = "https://github.com/pluots/messagepack-cli"
+repository = "https://github.com/pluots/msgpack-cli"
 description = "A command line utility that converts between JSON and MessagePack"
 keywords = ["cli", "msgpack"]
 categories = ["command-line-utilities"]
+
+[badges]
+maintenance = { status = "actively-developed" }
 
 [[bin]]
 name = "msgpack"

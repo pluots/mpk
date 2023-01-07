@@ -1,0 +1,42 @@
+allow-branch = ["main"]
+shared-version = true
+# Single commit for all crates since we are in one repo
+consolidate-commits = true
+tag-name = "v{{version}}"
+
+[[pre-release-replacements]]
+file = "CHANGELOG.md"
+search = "Unreleased"
+replace = "{{version}}"
+
+[[pre-release-replacements]]
+file = "CHANGELOG.md"
+search = "\\.\\.\\.HEAD"
+replace = "...{{tag_name}}"
+exactly = 1
+
+[[pre-release-replacements]]
+file = "CHANGELOG.md"
+search = "ReleaseDate"
+replace = "{{date}}"
+
+[[pre-release-replacements]]
+file = "CHANGELOG.md"
+search = "<!-- next-header -->"
+replace = """\
+  <!-- next-header -->\n\n\
+  ## [Unreleased] - ReleaseDate\n\n\
+  ### Added\n\n\
+  ### Changed\n\n\
+  ### Removed\n\n\
+  """
+exactly = 1
+
+[[pre-release-replacements]]
+file = "CHANGELOG.md"
+search = "<!-- next-url -->"
+replace = """\
+  <!-- next-url -->\n\
+  [Unreleased]: https://github.com/pluots/msgpack-cli/compare/{{tag_name}}...HEAD\
+  """
+exactly = 1
