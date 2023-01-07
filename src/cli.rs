@@ -8,6 +8,7 @@ use clap::Parser;
 /// If not specified, type will be inferred from input file arguments
 #[derive(Parser, Debug)]
 #[command(version, about)]
+#[allow(clippy::struct_excessive_bools)]
 pub struct Args {
     /// Specify the input file to read from. If not given, stdin will be used
     pub input_file: Option<String>,

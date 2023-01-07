@@ -2,13 +2,6 @@
 #![warn(clippy::cargo)]
 #![warn(clippy::nursery)]
 #![warn(clippy::str_to_string)]
-#![warn(clippy::missing_inline_in_public_items)]
-#![allow(clippy::match_same_arms)]
-#![allow(clippy::struct_excessive_bools)]
-#![allow(clippy::missing_panics_doc)]
-#![allow(clippy::must_use_candidate)]
-#![allow(clippy::missing_const_for_fn)]
-#![allow(clippy::derive_partial_eq_without_eq)]
 
 use clap::Parser;
 use std::fmt;
@@ -91,6 +84,7 @@ impl Args {
             let file = fs::File::open(fname).map_err(|e| Error::File(fname.clone(), e))?;
             Ok(Box::new(file))
         } else if let Some(txt) = self.input.as_ref() {
+            printvb!("getting input from text input");
             Ok(Box::new(io::Cursor::new(txt)))
         } else {
             printvb!("getting input from stdin");
@@ -102,12 +96,10 @@ impl Args {
     fn get_output(&self) -> Result<Box<dyn Write>, Error> {
         if let Some(fname) = self.output_file.as_ref() {
             printvb!("attempting to set output from file");
-
             let file = fs::File::create(fname).map_err(|e| Error::File(fname.clone(), e))?;
             Ok(Box::new(file))
         } else {
             printvb!("setting output to sdtout");
-
             Ok(Box::new(io::stdout()))
         }
     }
