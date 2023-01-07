@@ -1,7 +1,7 @@
 # This makefile will build (via Cargo)
 
 MAKEFLAGS=--warn-undefined-variables
-VERSION=0.1.0
+VERSION=0.1.1
 CARGO := $(shell command -v cargo 2> /dev/null)
 
 
