@@ -4,6 +4,16 @@
 
 ## [Unreleased] - ReleaseDate
 
+### Added
+
+### Changed
+
+### Removed
+
+
+
+## [0.1.0] - 2023-01-07
+
 Initial release supporting:
 
 - Bidirectional JSON <-> MessagePack conversions
@@ -13,4 +23,5 @@ Initial release supporting:
 
 
 <!-- next-url -->
-[Unreleased]: https://github.com/pluots/msgpack-cli/compare/3fb7ec2a...HEAD
+[Unreleased]: https://github.com/pluots/msgpack-cli/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/pluots/msgpack-cli/compare/3fb7ec2a...v0.1.0
