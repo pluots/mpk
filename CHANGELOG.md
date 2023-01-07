@@ -4,6 +4,8 @@
 
 ## [Unreleased] - ReleaseDate
 
+- Added `aarch64-unknown-linux-gnu`, `aarch64-apple-darwin`, and
+  `x86_64-pc-windows-gnu` targets
 
 
 ## [0.1.1] - 2023-01-07
