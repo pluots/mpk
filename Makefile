@@ -1,20 +1,34 @@
 # This makefile will build (via Cargo)
 
+MAKEFLAGS=--warn-undefined-variables
 VERSION=0.1.0
+CARGO := $(shell command -v cargo 2> /dev/null)
 
+
+# Install locations
 DESTDIR=
+MANFILE=msgpack.1
 PREFIX=/usr/local
 AUTOPFX=/usr/share
+MANDEST=${DESTDIR}${PREFIX}/share/man/man1
+BINDEST=${DESTDIR}${PREFIX}/bin
+COMPDEST_BASH=${AUTOPFX}/bash-completion/completions
+COMPDEST_FISH=${AUTOPFX}/fish/vendor_completions.d
+COMPDEST_ZSH=${AUTOPFX}/zsh/vendor-completions
 
-MANDIR=${DESTDIR}/${PREFIX}/share/man
-BINDIR=${DESTDIR}/${PREFIX}/bin
-MANFILE=msgpack.1
+USE_RELEASED_INSTALL=0
 
-BASHACDIR="${AUTOPFX}/bash-completion/completions
-FISHACDIR="${AUTOPFX}/fish/vendor_completions.d
-ZSHACDIR="${AUTOPFX}/zsh/vendor-completions
+ifeq ($(USE_RELEASED_INSTALL),1)
+BINSOURCE= .
+MANSOURCE = doc
+COMPLETESOURCE = completion
+else
+builddir=$(shell find target -name msgpack-stamp -print0 | xargs -0 ls -t | head -n1 | xargs dirname)
+BINSOURCE = target/release
+MANSOURCE = $(builddir)
+COMPLETESOURCE = $(builddir)
+endif
 
-CARGO := $(shell command -v cargo 2> /dev/null)
 
 all: msgpack
 
@@ -31,42 +45,38 @@ ifeq ($(OS),Windows_NT)
 	$(error install does not yet work on Windows)
 	exit 1
 endif
-	$(info installing binary, manpages, and shell complete)
-
-	BUILDDIR="$(find target -name msgpack-stamp -print0 | xargs -0 ls -t | head -n1 | xargs dirname)"
 	
-	# We override these in our release script
-	BUILT_MANDIR=${BUILDDIR}
-	BUILT_COMPLETEDIR=${BUILDDIR}
+	$(info installing binary, manpages, and shell completion scripts)
+	$(info binary source: ${BINSOURCE})
+	$(info manpage source: ${MANSOURCE})
+	$(info completion source: ${COMPLETESOURCE})
 
-	install -d ${MANDIR}/man1
-	install target/release/msgpack ${DESTDIR}/msgpack; \
-	install -m 644 ${BUILT_MANDIR}/${MANFILE} ${MANDIR}/man1/${MANFILE}
+	install -d ${BINDEST}
+	install -d ${MANDEST}
+	install ${BINSOURCE}/msgpack ${BINDEST}/msgpack
+	install -m 644 ${MANSOURCE}/${MANFILE} ${MANDEST}/${MANFILE}
 
-	INSTALLEDAC=0
-
-	if [ -d "${BASHACDIR}" ]; then \
-		install ${BUILDDIR}/msgpack.bash ${BASHACDIR}/msgpack.bash; \
-		$(info installed bash autocomplete); \
-		INSTALLEDAC=1
+	INSTALLEDAC=0; \
+	if [ -d "${COMPDEST_BASH}" ]; then \
+		install "${COMPLETESOURCE}/msgpack.bash" "${COMPDEST_BASH}/msgpack.bash"; \
+		echo installed bash autocomplete; \
+		INSTALLEDAC=1; \
+	fi; \
+	if [ -d "${COMPDEST_FISH}" ]; then \
+		install "${COMPLETESOURCE}/msgpack.fish" "${COMPDEST_FISH}/msgpack.fish"; \
+		echo installed fish autocomplete; \
+		INSTALLEDAC=1; \
+	fi; \
+	if [ -d "${COMPDEST_ZSH}" ]; then \
+		install "${COMPLETESOURCE}/_msgpack" "${COMPDEST_ZSH}/_msgpack"; \
+		echo installed zsh autocomplete; \
+		INSTALLEDAC=1; \
+	fi; \
+	if [ "$${INSTALLEDAC}" = "0" ]; then \
+		echo did not find any directorys to install autocompletion scripts; \
 	fi
 
-	if [ -d "${FISHACDIR}" ]; then \
-		install ${BUILDDIR}/msgpack.fish ${FISHACDIR}/msgpack.fish; \
-		$(info installed fish autocomplete); \
-		INSTALLEDAC=1
-	fi
-
-	if [ -d "${ZSHACDIR}" ]; then \
-		install ${BUILDDIR}/_msgpack ${ZSHACDIR}/_msgpack; \
-		$(info installed zsh autocomplete); \
-		INSTALLEDAC=1
-	fi
-
-ifeq (${INSTALLEDAC},0)
-	$(info did not find any directorys to install autocompletion scripts)
-endif
-
+	$(info install completed successfully)
 
 clean:
 ifndef CARGO
@@ -78,8 +88,8 @@ endif
 
 uninstall:
 	$(info cleaning install directory)
-	rm -f ${DESTDIR}/msgpack
-	rm -f ${MANDIR}/man1/${MAN}
-	rm -f ${BASHACDIR}/msgpack.bash
-	rm -f ${FISHACDIR}/msgpack.fish
-	rm -f ${ZSHACDIR}/_msgpack
+	rm -f ${BINDEST}/msgpack
+	rm -f ${MANDEST}/man1/${MANFILE}
+	rm -f ${COMPDEST_BASH}/msgpack.bash
+	rm -f ${COMPDEST_FISH}/msgpack.fish
+	rm -f ${COMPDEST_ZSH}/_msgpack

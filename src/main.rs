@@ -1,7 +1,7 @@
 //! MessagePack command line interface
 //!
 //! Install with `cargo install msgpack-cli` or get a prebuilt binary on the
-//! releases page: https://github.com/pluots/msgpack-cli/releases
+//! releases page: <https://github.com/pluots/msgpack-cli/releases>
 
 #![warn(clippy::pedantic)]
 #![warn(clippy::cargo)]
@@ -139,7 +139,7 @@ impl fmt::Display for Error {
             ),
             Self::NoDirection => write!(
                 f,
-                "Could not determine conversion direction. Specify '--to-json' or '--to-msgpack'."
+                "Could not determine conversion direction. Specify '--to-json' or '--to-msgpack' ('-j'/'-m')."
             ),
             Self::MessagePak(e) => write!(f, "Unable to parse MessagePack input, {e}"),
             Self::Json(e) => write!(f, "Unable to parse JSON input, {e}"),
@@ -269,16 +269,15 @@ where
     };
 
     let mut deserializer = rmp_serde::Deserializer::new(deser_buf);
-    let out_writer;
-
-    if pretty {
+    // Run serializer, get our output writer back
+    let out_writer = if pretty {
         let mut serializer = serde_json::Serializer::pretty(output);
         serde_transcode::transcode(&mut deserializer, &mut serializer)?;
-        out_writer = serializer.into_inner();
+        serializer.into_inner()
     } else {
         let mut serializer = serde_json::Serializer::new(output);
         serde_transcode::transcode(&mut deserializer, &mut serializer)?;
-        out_writer = serializer.into_inner();
+        serializer.into_inner()
     };
 
     // Return ownership of the output

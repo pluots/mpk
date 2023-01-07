@@ -103,10 +103,11 @@ jobs:
           # Remove the "unreleased" section from our changelog
           perl -0777 -i -pe "s/(<\!-- next-header -->.*## \[Unreleased\].*?\n)(?=## |<\!--)//gms" CHANGELOG.md
 
-          ./dist/create_install_makefile.sh
+          # Create Makefile.dist for shipping with the package
+          sh dist/create_install_makefile.sh
           
           cp {README.md,LICENSE} "$staging/"
-          cp Makefile.tmp "$staging/Makefile"
+          cp Makefile.dist "$staging/Makefile"
           cp CHANGELOG.md "$staging/doc/"
           # Copy manpages
           cp "$cargo_outdir"/msgpack.1 "$staging/doc"

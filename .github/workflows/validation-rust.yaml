@@ -66,8 +66,8 @@ jobs:
       - name: Test make
         if: matrix.os != 'windows-latest'
         run: |
-          ./dist/create_install_makefile.sh
-          cargo_outdir="$(find "${{ env.TARGET_DIR }}" -name zspell-stamp -print0 | xargs -0 ls -t | head -n1 | xargs dirname)"
+          sh dist/create_install_makefile.sh
+          cargo_outdir="$(find target -name zspell-stamp -print0 | xargs -0 ls -t | head -n1 | xargs dirname)"
           mkdir testdir
           mv Makefile.tmp testdir/Makefile
           mv target
@@ -75,11 +75,11 @@ jobs:
           make install
           test -f /usr/local/bin/msgpack
           test -f /usr/local/share/man/msgpack.1
-          test -f /usr/share/bash-completion/completions
+          test -f /usr/share/bash-completion/completions/msgpack.bash
           make uninstall
           test ! -f /usr/local/bin/msgpack
           test ! -f /usr/local/share/man/msgpack.1
-          test ! -f /usr/share/bash-completion/completions
+          test ! -f /usr/share/bash-completion/completions/msgpack.bash
 
   miri:
     name: Miri

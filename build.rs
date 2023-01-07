@@ -59,7 +59,7 @@ fn main() -> Result<(), std::io::Error> {
     let make_dist = std::env::var("MAKE_DIST").map_or(false, |v| v == "1");
 
     // Don't generate outputs if we're in debug mode
-    if make_dist || profile.as_str() != "debug"  {
+    if make_dist || profile.as_str() != "debug" {
         // Create a dummy file to help find the latest output
         let stamp_path = Path::new(&outdir).join("msgpack-stamp");
         if let Err(err) = File::create(&stamp_path) {
