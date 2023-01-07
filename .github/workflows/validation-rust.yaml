@@ -60,7 +60,7 @@ jobs:
       - name: Test make
         if: matrix.os != 'windows-latest'
         run: |
-          MAKE_DIST=1 cargo build
+          MAKE_DIST=1 cargo build --target-dir target
           cargo_outdir="$(find target -name msgpack-stamp -print0 | xargs -0 ls -t | head -n1 | xargs dirname)"
           ls "$cargo_outdir"
           ls target
