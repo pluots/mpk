@@ -1,9 +1,9 @@
 use std::io::{Read, Write};
 use std::process::Command;
-use predicates::str as pred_str;
 use std::str;
 
 use assert_cmd::prelude::*;
+use predicates::str as pred_str;
 use tempfile::NamedTempFile;
 
 const JSON: &str =
@@ -53,18 +53,21 @@ fn test_text_input() {
     let mut cmd = assert_cmd::Command::cargo_bin("msgpack").unwrap();
     cmd.arg("--to-msgpack").arg("--input").arg(JSON);
     cmd.assert().success().stdout(BYTES.as_slice());
-    
+
     let mut buf = Vec::new();
     for byte in BYTES {
-        write!(&mut buf, "{:02x}", byte).unwrap();
+        write!(&mut buf, "{byte:02x}").unwrap();
     }
     let hex_str = str::from_utf8(&buf).unwrap();
 
     let mut cmd = assert_cmd::Command::cargo_bin("msgpack").unwrap();
     cmd.arg("--to-json").arg("--input").arg(hex_str);
     cmd.assert().success().stdout(pred_str::contains(JSON));
-    
+
     let mut cmd = assert_cmd::Command::cargo_bin("msgpack").unwrap();
-    cmd.arg("--to-msgpack").arg("--input").arg(JSON).arg("--hex");
+    cmd.arg("--to-msgpack")
+        .arg("--input")
+        .arg(JSON)
+        .arg("--hex");
     cmd.assert().success().stdout(pred_str::contains(hex_str));
 }

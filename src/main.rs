@@ -329,7 +329,12 @@ fn main_runner() -> Result<(), Error> {
     let mut output = args.get_output()?;
 
     if args.to_json {
-        mp_to_json(&mut input, &mut output, args.hex || args.input.is_some(), args.pretty)?;
+        mp_to_json(
+            &mut input,
+            &mut output,
+            args.hex || args.input.is_some(),
+            args.pretty,
+        )?;
     } else {
         json_to_mp(&mut input, &mut output, args.hex, args.pretty)?;
     }

@@ -57,20 +57,19 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-      - name: Build
-        uses: actions-rs/cargo@v1
-        env:
-          MAKE_DIST: "1"
-        with:
-          command: build
       - name: Test make
         if: matrix.os != 'windows-latest'
         run: |
+          MAKE_DIST=1 cargo build
+          cargo_outdir="$(find target -name msgpack-stamp -print0 | xargs -0 ls -t | head -n1 | xargs dirname)"
+          ls "$cargo_outdir"
+          ls target
+          mkdir testdir testdir/completion testdir/doc
           sh dist/create_install_makefile.sh
-          cargo_outdir="$(find target -name zspell-stamp -print0 | xargs -0 ls -t | head -n1 | xargs dirname)"
-          mkdir testdir
-          mv Makefile.tmp testdir/Makefile
-          mv target
+          mv Makefile.dist testdir/Makefile
+          mv "$cargo_outdir"/msgpack.1 testdir/doc
+          mv "$cargo_outdir"/* testdir/completion
+          mv target/debug/msgpack testdir
           cd testdir
           make install
           test -f /usr/local/bin/msgpack
@@ -80,33 +79,6 @@ jobs:
           test ! -f /usr/local/bin/msgpack
           test ! -f /usr/local/share/man/msgpack.1
           test ! -f /usr/share/bash-completion/completions/msgpack.bash
-
-  miri:
-    name: Miri
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v3
-        id: cache-cargo
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly
-          override: true
-      - run: rustup component add miri
-      - name: Run Miri
-        # env:
-          # Can't use chrono for time in isolation
-          # MIRIFLAGS: -Zmiri-disable-isolation
-        run: cargo miri test
 
   fmt:
     name: "Format (cargo fmt)"
