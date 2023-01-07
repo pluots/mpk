@@ -1,0 +1,137 @@
+---
+name: "Rust Build & Release"
+
+# This configuration largely comes from ripgrep
+
+on:
+  push:
+    tags:
+    - 'v*'
+# on:
+#   pull_request:
+
+env:
+  RUSTFLAGS: "-D warnings --cfg uuid_unstable"
+
+jobs:
+  build_release:
+    name: "Build ${{ matrix.build }} binaries (cargo build)"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - build: linux
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            # Unsuccessful compilation; try on local
+          # - build: linux-arm
+          #   os: ubuntu-latest
+          #   target: arm-unknown-linux-gnueabihf
+          #   extension: ''
+          # - build: macos
+          #   os: macos-latest
+          #   target: x86_64-apple-darwin
+          #   extension: ''
+          - build: windows-msvc
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+    env:
+      CARGO: cargo
+      TARGET_DIR: ./target
+      TARGET_FLAGS: ""
+      MYSQLCLIENT_LIB_DIR: C:\mysql\lib
+    steps:
+        # Retreive git files
+      - uses: actions/checkout@v2
+        # Set cache configuration
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        # Install cargo
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          target: ${{ matrix.target }}
+        # Debugging aid
+      - name: Show commands
+        run: |
+          echo pwd:
+          pwd
+          echo ls:
+          ls
+          echo "cargo command is: ${{ env.CARGO }}"
+          echo "target flag is: ${{ env.TARGET_FLAGS }}"
+          echo "target dir is: ${{ env.TARGET_DIR }}"
+        # Perform build
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --verbose --target ${{ matrix.target }}
+      - name: Show output
+        run: |
+          ls target
+          ls "target/${{ matrix.target }}"
+          ls "target/${{ matrix.target }}/release"
+        # Create .zip or .tar.gz file
+      - name: Build archive
+        shell: bash
+        run: |
+          # outdir="$(ci/cargo-out-dir "${{ env.TARGET_DIR }}")"
+          # outdir=target/release/${{ steps.get_repository_name.outputs.REPOSITORY_NAME }}${{ matrix.extension }}
+          # cargo_outdir="$(find "${{ env.TARGET_DIR }}" -name udfsuite-stamp -print0 | xargs -0 ls -t | head -n1 | xargs dirname)"
+          ref_name=${GITHUB_REF##*/}
+
+          # Remove leading 'v' for use where needed
+          ref_name_stripped=$(echo $ref_name | perl -0pe 's/^v//')
+          echo "Ref name: \"$ref_name\""
+          echo "Ref name stripped: \"$ref_name_stripped\""
+
+          staging="udfsuite-$ref_name-${{ matrix.target }}"
+          mkdir "$staging"
+
+          # Remove the "unreleased" section from our changelog
+          perl -0777 -i -pe "s/(<\!-- next-header -->.*## \[Unreleased\].*?\n)(?=## |<\!--)//gms" CHANGELOG.md
+
+          cp {README.md,LICENSE*,CHANGELOG.md} "$staging/"
+
+          # Build RNOTES.md, which we will use for our Github release (not shipped in zip)
+          # Select the release notes from our latest version only
+          perl -0777 -ne "print /(## \[$ref_name_stripped\].*?\n)(?=\n*^(?:## |<\!--))/gms" CHANGELOG.md > RNOTES.md
+          # Select the diff URL for this version only
+          perl -0777 -ne "print /\n\[$ref_name_stripped\]:.*?\n/gms" CHANGELOG.md >> RNOTES.md
+
+          echo "Release notes:" && cat RNOTES.md
+          echo Output:
+          ls "target/${{ matrix.target }}/release/"
+
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            cp target/${{ matrix.target }}/release/*.dll "$staging/"
+            7z a "$staging.zip" "$staging"
+            echo "ASSET=$staging.zip" >> $GITHUB_ENV
+          else
+            cp "target/${{ matrix.target }}/release/"*.so "$staging/" || true
+            cp "target/${{ matrix.target }}/release/"*.dylib "$staging/" || true
+            tar czf "$staging.tar.gz" "$staging"
+            echo "ASSET=$staging.tar.gz" >> $GITHUB_ENV
+          fi
+        # Upload to github
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_REPOSITORY: pluots/udf-suite
+        with:
+          body_path: RNOTES.md
+          # note you'll typically need to create a personal access token
+          # with permissions to create releases in the other repo
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: |
+            ${{ env.ASSET }}
