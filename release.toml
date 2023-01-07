@@ -32,9 +32,6 @@ search = "<!-- next-header -->"
 replace = """\
   <!-- next-header -->\n\n\
   ## [Unreleased] - ReleaseDate\n\n\
-  ### Added\n\n\
-  ### Changed\n\n\
-  ### Removed\n\n\
   """
 exactly = 1
 

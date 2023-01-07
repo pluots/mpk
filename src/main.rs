@@ -41,18 +41,17 @@ impl Args {
     /// Also set `to_json`/`to_msgpack` based on file names if needed
     fn validate_update(&mut self) -> Result<(), Error> {
         VERBOSITY.store(self.verbose, Ordering::Relaxed);
+        if self.input_file.is_some() && self.input.is_some() {
+            return Err(Error::ArgConflict(
+                "INPUT_FILE".to_owned(),
+                "--text".to_owned(),
+            ));
+        }
 
         if self.to_json && self.to_msgpack {
             return Err(Error::ArgConflict(
                 "--to-json".to_owned(),
                 "--to-msgpack".to_owned(),
-            ));
-        }
-
-        if self.input_file.is_some() && self.input.is_some() {
-            return Err(Error::ArgConflict(
-                "INPUT_FILE".to_owned(),
-                "--text".to_owned(),
             ));
         }
 
@@ -141,8 +140,8 @@ impl fmt::Display for Error {
                 f,
                 "Could not determine conversion direction. Specify '--to-json' or '--to-msgpack' ('-j'/'-m')."
             ),
-            Self::MessagePak(e) => write!(f, "Unable to parse MessagePack input, {e}"),
-            Self::Json(e) => write!(f, "Unable to parse JSON input, {e}"),
+            Self::MessagePak(e) => write!(f, "Unable to parse MessagePack input: {e}"),
+            Self::Json(e) => write!(f, "JSON error, {e}"),
             Self::Hex(e) => write!(f, "Invalid hex: {e}"),
             Self::NoInput => write!(f, "No input is present"),
             Self::File(n, e) => write!(f, "Error reading '{n}': {e}"),
@@ -231,6 +230,8 @@ impl FType {
 
 /// Pretty print hex from a string in 8 groups of 4
 fn write_pretty_hex<W: Write>(out: &mut W, in_: &str) -> Result<(), Error> {
+    printvb!("prettyprinting hex");
+
     for (i, chunk) in in_.as_bytes().chunks(4).enumerate() {
         if i > 0 && i % 8 == 0 {
             out.write_all(b"\n")?;
@@ -250,8 +251,9 @@ where
     R: Read,
     W: Write,
 {
-    printvb!("transcoding from MessagePack to JSON");
+    printvb!("encoding from messagepack to json");
 
+    // We can't transcode in this direction, so we buffer
     let mut inbuf = Vec::new();
     let byte_count = input.read_to_end(&mut inbuf)?;
     printvb!("read {byte_count} bytes");
@@ -291,6 +293,7 @@ where
     R: Read,
     W: Write,
 {
+    printvb!("transcoding json to messagepack");
     let mut deserializer = serde_json::Deserializer::from_reader(input);
 
     if use_hex {
@@ -326,7 +329,7 @@ fn main_runner() -> Result<(), Error> {
     let mut output = args.get_output()?;
 
     if args.to_json {
-        mp_to_json(&mut input, &mut output, args.hex, args.pretty)?;
+        mp_to_json(&mut input, &mut output, args.hex || args.input.is_some(), args.pretty)?;
     } else {
         json_to_mp(&mut input, &mut output, args.hex, args.pretty)?;
     }

@@ -4,12 +4,8 @@
 
 ## [Unreleased] - ReleaseDate
 
-### Added
-
-### Changed
-
-### Removed
-
+- Added pretty printing for hex and JSON output
+- CLI now defaults to hex input when specifying `-i -j`
 
 
 ## [0.1.0] - 2023-01-07

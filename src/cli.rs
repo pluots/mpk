@@ -29,7 +29,7 @@ pub struct Args {
     #[arg(short = 'm', long)]
     pub to_msgpack: bool,
 
-    /// Use messagepack with hexadecimal strings instead of binary
+    /// Use messagepack with hexadecimal strings instead of binary. Implied with '-i <input> -j'
     #[arg(long)]
     pub hex: bool,
 
