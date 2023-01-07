@@ -1,38 +1,7 @@
 # MessagePack CLI
 
-This is a simple CLI for converting between MessagePack and JSON.
-
-
-## Installing
-
-The easiest way to install is to go the [releases] page 
-
-[releases]: https://github.com/pluots/msgpack-cli/releases
-
-## Usage
-
-Usage is very simple:
-
-```
-Usage: msgpack [OPTIONS] [INPUT_FILE]
-
-Arguments:
-  [INPUT_FILE]  Specify the input file to read from. If not given, stdin will be used
-
-Options:
-  -o, --output <OUTPUT_FILE>  Specify the output file to write. If not specified, stdout will be used
-  -i, --input <INPUT>         Specify input via text. (can't use with 'INPUT_FILE')
-  -j, --to-json               Convert from MessagePack to JSON. (can't use with '--to-json')
-  -m, --to-msgpack            Convert from JSON to MessagePack. (can't use with '--to-msgpack')
-      --hex                   Use messagepack with hexadecimal strings instead of binary
-  -p, --pretty                Enable pretty output (formatted JSON, spacing for MessagePack when
-                              used with `--hex`)
-  -v, --verbose               Turn verbose mode on
-  -h, --help                  Print help information (use `--help` for more detail)
-  -V, --version               Print version information
-```
-
-Examples:
+This is a simple CLI for converting between MessagePack and JSON. Jump to
+[Installing](#installing) for installation instructions.
 
 ```sh
 $ # Basic usage: convert a file either direction
@@ -66,4 +35,37 @@ $ msgpack in.json --hex --pretty
 83a4 6e61 6d65 ab6d 6573 7361 6765 7061
 636b a361 6765 14a6 736f 7572 6365 a667
 6974 6875 62
+```
+
+## Installing
+
+The easiest way to install is to go the [releases] page and download a version.
+Alternatively, you can install with Cargo via `cargo install msgpack-cli`, or
+build the source yourself with `cargo build --release`.
+
+In any of these cases, you will want to make sure the executable is in path
+
+[releases]: https://github.com/pluots/msgpack-cli/releases
+
+## Usage
+
+See above for usage examples. The command line options are as follows:
+
+```
+Usage: msgpack [OPTIONS] [INPUT_FILE]
+
+Arguments:
+  [INPUT_FILE]  Specify the input file to read from. If not given, stdin will be used
+
+Options:
+  -o, --output <OUTPUT_FILE>  Specify the output file to write. If not specified, stdout will be used
+  -i, --input <INPUT>         Specify input via text. (can't use with 'INPUT_FILE')
+  -j, --to-json               Convert from MessagePack to JSON. (can't use with '--to-json')
+  -m, --to-msgpack            Convert from JSON to MessagePack. (can't use with '--to-msgpack')
+      --hex                   Use messagepack with hexadecimal strings instead of binary
+  -p, --pretty                Enable pretty output (formatted JSON, spacing for MessagePack when
+                              used with `--hex`)
+  -v, --verbose               Turn verbose mode on
+  -h, --help                  Print help information (use `--help` for more detail)
+  -V, --version               Print version information
 ```

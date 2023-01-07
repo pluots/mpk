@@ -5,6 +5,11 @@ consolidate-commits = true
 tag-name = "v{{version}}"
 
 [[pre-release-replacements]]
+file = "Makefile"
+search = 'VERSION=\d\.\d.\d.*'
+replace = "VERSION={{version}}"
+
+[[pre-release-replacements]]
 file = "CHANGELOG.md"
 search = "Unreleased"
 replace = "{{version}}"
