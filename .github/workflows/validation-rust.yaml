@@ -12,6 +12,7 @@ env:
   RUSTDOCFLAGS: -D warnings
   RUSTFLAGS: "-D warnings"
   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+  TARGET_DIR: ./target
 
 jobs:
   check_test:
@@ -32,6 +33,8 @@ jobs:
 
     name: "Check and test on ${{ matrix.os }} (cargo check & cargo test)"
     runs-on: ${{ matrix.os }}
+    env:
+      MAKE_DIST: "1"
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v3
@@ -57,32 +60,51 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
+      - name: Build binary
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
       - name: Test make
         if: matrix.os != 'windows-latest'
         run: |
-          MAKE_DIST=1 cargo build --target-dir target
           cargo_outdir="$(find target -name msgpack-stamp -print0 | xargs -0 ls -t | head -n1 | xargs dirname)"
           echo outdir: "$cargo_outdir"
-          ls "$cargo_outdir"
-          ls target
-          ls target/debug
+          
           mkdir testdir testdir/completion testdir/doc
           sh dist/create_install_makefile.sh
           mv Makefile.dist testdir/Makefile
-          echo "Moved makefile"
           mv "$cargo_outdir"/msgpack.1 testdir/doc
-          echo "Moved manpage"
           mv "$cargo_outdir"/* testdir/completion
           mv target/debug/msgpack testdir
           cd testdir
-          make install
+
+          echo running make install
+          sudo make install
+
+          echo testing files
+          echo testing msgpack presence
           test -f /usr/local/bin/msgpack
-          test -f /usr/local/share/man/msgpack.1
-          test -f /usr/share/bash-completion/completions/msgpack.bash
-          make uninstall
+          echo testing msgpack.1 presence
+          test -f /usr/local/share/man/man1/msgpack.1
+
+          if [ "{{ matrix.os }}" = "ubuntu-latest" ]; then
+            echo testing msgpack.bash presence
+            test -f /usr/share/bash-completion/completions/msgpack.bash
+          fi
+          
+          echo running make uninstall
+          sudo make uninstall
+          
+          echo testing files
+          echo testing msgpack presence
           test ! -f /usr/local/bin/msgpack
-          test ! -f /usr/local/share/man/msgpack.1
-          test ! -f /usr/share/bash-completion/completions/msgpack.bash
+          echo testing msgpack.1 presence
+          test ! -f /usr/local/share/man/man1/msgpack.1
+
+          if [ "{{ matrix.os }}" = "ubuntu-latest" ]; then
+            echo testing msgpack.bash presence
+            test ! -f /usr/share/bash-completion/completions/msgpack.bash
+          fi
 
   fmt:
     name: "Format (cargo fmt)"
