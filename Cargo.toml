@@ -11,6 +11,10 @@ categories = ["command-line-utilities"]
 [badges]
 maintenance = { status = "actively-developed" }
 
+[profile.release]
+strip = "symbols"
+lto = "fat"
+
 [[bin]]
 name = "msgpack"
 path = "src/main.rs"

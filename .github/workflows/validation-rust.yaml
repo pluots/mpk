@@ -20,18 +20,32 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          - build: linux
+          - name: linux x64
             os: ubuntu-latest
             target: x86_64-unknown-linux-musl
-          - build: macos
+            native: true
+          - name: linux aarch
+            os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            native: true
+          - name: macos x64
             os: macos-latest
             target: x86_64-apple-darwin
-            extension: ''
-          - build: windows-msvc
+            native: true
+          - name: macos aarch
+            os: macos-latest
+            target: aarch64-apple-darwin
+            native: false
+          - name: windows msvc
             os: windows-latest
             target: x86_64-pc-windows-msvc
+            native: true
+          - name: windows gnu
+            os: windows-latest
+            target: x86_64-pc-windows-gnu
+            native: true
 
-    name: "Check and test on ${{ matrix.os }} (cargo check & cargo test)"
+    name: "Check/test ${{ matrix.name }}. Testing: ${{ matrix.native }}"
     runs-on: ${{ matrix.os }}
     env:
       MAKE_DIST: "1"
@@ -46,26 +60,19 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@nightly
         with:
-          profile: minimal
-          toolchain: stable
-          override: true
+          targets: ${{matrix.target}}
       - name: Run check
-        uses: actions-rs/cargo@v1
-        with:
-          command: check
-          args: --all-features --all-targets
+        run: cargo check --all-features --all-targets --target ${{ matrix.target }}
       - name: Run tests
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
+        if: matrix.native == 'true'
+        run: cargo test --target ${{ matrix.target }}
       - name: Build binary
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
+        if: matrix.native == 'true' && matrix.os != 'windows-latest'
+        run: cargo build
       - name: Test make
-        if: matrix.os != 'windows-latest'
+        if: matrix.native == 'true' && matrix.os != 'windows-latest'
         run: |
           cargo_outdir="$(find target -name msgpack-stamp -print0 | xargs -0 ls -t | head -n1 | xargs dirname)"
           echo outdir: "$cargo_outdir"
@@ -120,16 +127,10 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@nightly
         with:
-          profile: minimal
-          toolchain: nightly
-          override: true
-      - run: rustup component add rustfmt
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
+          components: rustfmt
+      - run: cargo fmt --all -- --check
 
   clippy:
     name: "Clippy (cargo clippy)"
@@ -145,17 +146,10 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@nightly
         with:
-          profile: minimal
-          # Some nice checks are only nightly
-          toolchain: nightly
-          override: true
-      - run: rustup component add clippy
-      - uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: --all-features --all-targets -- -D warnings
+          components: clippy
+      - run: cargo clippy --all-features --all-targets -- -D warnings
 
   doc:
     name: "Docs (cargo doc)"
@@ -171,13 +165,5 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly
-          override: true
-      - run: rustup component add rustfmt
-      - uses: actions-rs/cargo@v1
-        with:
-          command: doc
-          args: --document-private-items
+      - uses: dtolnay/rust-toolchain@nightly
+      - run: cargo doc --document-private-items
