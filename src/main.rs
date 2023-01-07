@@ -48,11 +48,10 @@ struct Args {
     /// Use messagepack with hexadecimal strings instead of binary
     #[arg(long)]
     hex: bool,
-    
+
     /// Turn verbose mode on
     #[arg(short, long)]
     verbose: bool,
-
 }
 
 /// Representation of our exit codes
@@ -77,7 +76,8 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Error::ArgConflict(a1, a2) => write!(
-                f, "Both {a1} and {a2} given, but only one is allowed at a time"
+                f,
+                "Both {a1} and {a2} given, but only one is allowed at a time"
             ),
             Error::NoDirection => write!(
                 f,
@@ -142,11 +142,17 @@ impl Args {
         VERBOSITY.store(self.verbose, Ordering::Relaxed);
 
         if self.to_json && self.to_msgpack {
-            return Err(Error::ArgConflict("--to-json".to_owned(), "--to-msgpack".to_owned()));
+            return Err(Error::ArgConflict(
+                "--to-json".to_owned(),
+                "--to-msgpack".to_owned(),
+            ));
         }
 
         if self.input_file.is_some() && self.text.is_some() {
-            return Err(Error::ArgConflict("INPUT_FILE".to_owned(), "--text".to_owned()));
+            return Err(Error::ArgConflict(
+                "INPUT_FILE".to_owned(),
+                "--text".to_owned(),
+            ));
         }
 
         // Attempt to infer the input and output types
@@ -203,42 +209,81 @@ impl Args {
     }
 }
 
+/// Write messagepack from input to outpu
+fn mp_to_json<R, W>(input: &mut R, output: &mut W, read_hex: bool) -> Result<(), Error>
+where
+    R: Read,
+    W: Write,
+{
+    printvb!("transcoding from MessagePack to JSON");
+
+    let mut inbuf = Vec::new();
+    let byte_count = input.read_to_end(&mut inbuf).map_err(Error::Io)?;
+    printvb!("read {byte_count} bytes");
+
+    let hex_buf: Vec<u8>;
+
+    // If we are requested to decode the hex input, do so
+    let deser_buf = if read_hex {
+        printvb!("decoding hex string input");
+        inbuf.retain(|c| !c.is_ascii_whitespace());
+        hex_buf = hex::decode(inbuf).map_err(Error::Hex)?;
+        hex_buf.as_slice()
+    } else {
+        inbuf.as_slice()
+    };
+
+    let mut deserializer = rmp_serde::Deserializer::new(deser_buf);
+    let mut serializer = serde_json::Serializer::new(output);
+    serde_transcode::transcode(&mut deserializer, &mut serializer).map_err(Error::Json)?;
+
+    // Return ownership of the output
+    serializer.into_inner().write(b"\n").map_err(Error::Io)?;
+    Ok(())
+}
+
+/// Write json to messagepack output. This is streaming
+fn json_to_mp<R, W>(input: &mut R, output: &mut W, write_hex: bool) -> Result<(), Error>
+where
+    R: Read,
+    W: Write,
+{
+    let mut deserializer = serde_json::Deserializer::from_reader(input);
+
+    if write_hex {
+        printvb!("using hex string output");
+        let hex_buf = Vec::new();
+        let mut serializer = rmp_serde::Serializer::new(io::Cursor::new(hex_buf));
+
+        serde_transcode::transcode(&mut deserializer, &mut serializer)
+            .map_err(Error::MessagePak)?;
+        let mut cursor = serializer.into_inner();
+        cursor.write(b"\n").map_err(Error::Io)?;
+        output
+            .write(hex::encode(cursor.into_inner()).as_bytes())
+            .map_err(Error::Io)?;
+            
+    } else {
+        let mut serializer = rmp_serde::Serializer::new(output);
+        serde_transcode::transcode(&mut deserializer, &mut serializer)
+            .map_err(Error::MessagePak)?;
+    };
+
+    Ok(())
+}
+
 fn main_runner() -> Result<(), Error> {
     let mut args = Args::parse();
 
     // Validate arguments, return an error if applicable
     args.validate_update()?;
     let mut input = args.get_input()?;
-    let output = args.get_output()?;
+    let mut output = args.get_output()?;
 
     if args.to_json {
-        printvb!("transcoding from MessagePack to JSON");
-
-        let mut inbuf = String::new();
-        input.read_to_string(&mut inbuf).map_err(Error::Io)?;
-
-        let hex_buf: Vec<u8>;
-
-        // If we are requested to decode the hex input, do so
-        let bytes_buf = if args.hex {
-            printvb!("decoding hex string input");
-            inbuf.retain(|c| !c.is_ascii_whitespace());
-            hex_buf = hex::decode(inbuf).map_err(Error::Hex)?; 
-            &hex_buf
-        } else {
-            inbuf.as_bytes()
-        };
-
-        let mut deserializer = rmp_serde::Deserializer::new(bytes_buf);
-        let mut serializer = serde_json::Serializer::new(output);
-        serde_transcode::transcode(&mut deserializer, &mut serializer).map_err(Error::Json)?;
+        mp_to_json(&mut input, &mut output, args.hex)?
     } else {
-        printvb!("transcoding from JSON to MessagePack");
-
-        let mut deserializer = serde_json::Deserializer::from_reader(input);
-        let mut serializer = rmp_serde::Serializer::new(output);
-        serde_transcode::transcode(&mut deserializer, &mut serializer)
-            .map_err(Error::MessagePak)?;
+        json_to_mp(&mut input, &mut output, args.hex)?
     }
 
     Ok(())

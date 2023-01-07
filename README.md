@@ -18,6 +18,8 @@ This is an experimental CLI for converting between MessagePack and JSON.
 Examples:
 
 ```bash
-msgpack
+
+# Use 
+msgpack --hex -t "82 a7 63 6f 6d 70 61 63 74 c3 a6 73 63 68 65 6d 61 00" --to-json
 
 ```
