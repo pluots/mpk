@@ -8,6 +8,7 @@ tag-name = "v{{version}}"
 file = "Makefile"
 search = 'VERSION=\d\.\d.\d.*'
 replace = "VERSION={{version}}"
+exactly = 1
 
 [[pre-release-replacements]]
 file = "CHANGELOG.md"

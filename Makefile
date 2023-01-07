@@ -1,3 +1,5 @@
+# This makefile will build (via Cargo)
+
 VERSION=0.1.0
 
 DESTDIR=
@@ -8,9 +10,9 @@ MANDIR=${DESTDIR}/${PREFIX}/share/man
 BINDIR=${DESTDIR}/${PREFIX}/bin
 MANFILE=msgpack.1
 
-BASHACDIR="${AUTOPFX}/bash-completion/completions"
-FISHACDIR="${AUTOPFX}/fish/vendor_completions.d"
-ZSHACDIR="${AUTOPFX}/zsh/vendor-completions/
+BASHACDIR="${AUTOPFX}/bash-completion/completions
+FISHACDIR="${AUTOPFX}/fish/vendor_completions.d
+ZSHACDIR="${AUTOPFX}/zsh/vendor-completions
 
 CARGO := $(shell command -v cargo 2> /dev/null)
 
@@ -32,12 +34,16 @@ endif
 	$(info installing binary, manpages, and shell complete)
 
 	BUILDDIR="$(find target -name msgpack-stamp -print0 | xargs -0 ls -t | head -n1 | xargs dirname)"
+	
+	# We override these in our release script
+	BUILT_MANDIR=${BUILDDIR}
+	BUILT_COMPLETEDIR=${BUILDDIR}
+
 	install -d ${MANDIR}/man1
 	install target/release/msgpack ${DESTDIR}/msgpack; \
-	install -m 644 ${BUILDDIR}/${MAN} ${MANDIR}/man1/${MAN}
+	install -m 644 ${BUILT_MANDIR}/${MANFILE} ${MANDIR}/man1/${MANFILE}
 
 	INSTALLEDAC=0
-
 
 	if [ -d "${BASHACDIR}" ]; then \
 		install ${BUILDDIR}/msgpack.bash ${BASHACDIR}/msgpack.bash; \
@@ -48,12 +54,18 @@ endif
 	if [ -d "${FISHACDIR}" ]; then \
 		install ${BUILDDIR}/msgpack.fish ${FISHACDIR}/msgpack.fish; \
 		$(info installed fish autocomplete); \
+		INSTALLEDAC=1
 	fi
 
 	if [ -d "${ZSHACDIR}" ]; then \
-		install ${BUILDDIR}/_msgpack ${ZSHACDIR}; \
+		install ${BUILDDIR}/_msgpack ${ZSHACDIR}/_msgpack; \
 		$(info installed zsh autocomplete); \
+		INSTALLEDAC=1
 	fi
+
+ifeq (${INSTALLEDAC},0)
+	$(info did not find any directorys to install autocompletion scripts)
+endif
 
 
 clean:
@@ -70,3 +82,4 @@ uninstall:
 	rm -f ${MANDIR}/man1/${MAN}
 	rm -f ${BASHACDIR}/msgpack.bash
 	rm -f ${FISHACDIR}/msgpack.fish
+	rm -f ${ZSHACDIR}/_msgpack

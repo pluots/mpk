@@ -57,6 +57,30 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
+      - name: Build
+        uses: actions-rs/cargo@v1
+        env:
+          MAKE_DIST: "1"
+        with:
+          command: build
+      - name: Test make
+        if: matrix.os != 'windows-latest'
+        run: |
+          ./dist/create_install_makefile.sh
+          cargo_outdir="$(find "${{ env.TARGET_DIR }}" -name zspell-stamp -print0 | xargs -0 ls -t | head -n1 | xargs dirname)"
+          mkdir testdir
+          mv Makefile.tmp testdir/Makefile
+          mv target
+          cd testdir
+          make install
+          test -f /usr/local/bin/msgpack
+          test -f /usr/local/share/man/msgpack.1
+          test -f /usr/share/bash-completion/completions
+          make uninstall
+          test ! -f /usr/local/bin/msgpack
+          test ! -f /usr/local/share/man/msgpack.1
+          test ! -f /usr/share/bash-completion/completions
+
   miri:
     name: Miri
     runs-on: ubuntu-latest
