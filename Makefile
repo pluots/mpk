@@ -7,14 +7,14 @@ CARGO := $(shell command -v cargo 2> /dev/null)
 
 # Install locations
 DESTDIR=
-MANFILE=msgpack.1
 PREFIX=/usr/local
-AUTOPFX=/usr/share
 MANDEST=${DESTDIR}${PREFIX}/share/man/man1
 BINDEST=${DESTDIR}${PREFIX}/bin
-COMPDEST_BASH=${AUTOPFX}/bash-completion/completions
-COMPDEST_FISH=${AUTOPFX}/fish/vendor_completions.d
-COMPDEST_ZSH=${AUTOPFX}/zsh/vendor-completions
+
+COMPDEST_PFX=/usr/share
+COMPDEST_BASH=${COMPDEST_PFX}/bash-completion/completions
+COMPDEST_FISH=${COMPDEST_PFX}/fish/vendor_completions.d
+COMPDEST_ZSH=${COMPDEST_PFX}/zsh/vendor-completions
 
 USE_RELEASED_INSTALL=0
 
@@ -54,7 +54,7 @@ endif
 	install -d ${BINDEST}
 	install -d ${MANDEST}
 	install ${BINSOURCE}/msgpack ${BINDEST}/msgpack
-	install -m 644 ${MANSOURCE}/${MANFILE} ${MANDEST}/${MANFILE}
+	install -m 644 ${MANSOURCE}/msgpack.1 ${MANDEST}/msgpack.1
 
 	INSTALLEDAC=0; \
 	if [ -d "${COMPDEST_BASH}" ]; then \
@@ -87,9 +87,9 @@ endif
 
 
 uninstall:
-	$(info cleaning install directory)
+	$(info cleaning install directories)
 	rm -f ${BINDEST}/msgpack
-	rm -f ${MANDEST}/man1/${MANFILE}
+	rm -f ${MANDEST}/msgpack.1
 	rm -f ${COMPDEST_BASH}/msgpack.bash
 	rm -f ${COMPDEST_FISH}/msgpack.fish
 	rm -f ${COMPDEST_ZSH}/_msgpack

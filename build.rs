@@ -66,6 +66,8 @@ fn main() -> Result<(), std::io::Error> {
             panic!("failed to write {}: {}", stamp_path.display(), err);
         }
 
+        println!("cargo:warning=stamp written to {stamp_path:?}");
+
         let mut cmd = cli::Args::command();
 
         build_shell_completion(&mut cmd, &outdir)?;
