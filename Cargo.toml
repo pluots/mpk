@@ -1,8 +1,12 @@
 [package]
-name = "msgpack"
+name = "msgpack-cli"
 version = "0.1.0"
 edition = "2021"
 license = "Apache-2.0"
+
+[[bin]]
+name = "msgpack"
+path = "src/main.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

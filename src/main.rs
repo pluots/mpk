@@ -35,7 +35,7 @@ struct Args {
 
     /// Specify input via text. (can't use with 'INPUT_FILE')
     #[arg(short, long)]
-    text: Option<String>,
+    input: Option<String>,
 
     /// Convert from MessagePack to JSON. (can't use with '--to-json')
     #[arg(short = 'j', long)]
@@ -148,7 +148,7 @@ impl Args {
             ));
         }
 
-        if self.input_file.is_some() && self.text.is_some() {
+        if self.input_file.is_some() && self.input.is_some() {
             return Err(Error::ArgConflict(
                 "INPUT_FILE".to_owned(),
                 "--text".to_owned(),
@@ -186,7 +186,7 @@ impl Args {
             printvb!("attempting to set input from file");
             let file = fs::File::open(fname).map_err(|e| Error::File(fname.to_owned(), e))?;
             Ok(Box::new(file))
-        } else if let Some(txt) = self.text.as_ref() {
+        } else if let Some(txt) = self.input.as_ref() {
             Ok(Box::new(io::Cursor::new(txt)))
         } else {
             printvb!("getting input from stdin");
@@ -238,7 +238,10 @@ where
     serde_transcode::transcode(&mut deserializer, &mut serializer).map_err(Error::Json)?;
 
     // Return ownership of the output
-    serializer.into_inner().write(b"\n").map_err(Error::Io)?;
+    serializer
+        .into_inner()
+        .write_all(b"\n")
+        .map_err(Error::Io)?;
     Ok(())
 }
 
@@ -257,12 +260,11 @@ where
 
         serde_transcode::transcode(&mut deserializer, &mut serializer)
             .map_err(Error::MessagePak)?;
-        let mut cursor = serializer.into_inner();
-        cursor.write(b"\n").map_err(Error::Io)?;
+
         output
-            .write(hex::encode(cursor.into_inner()).as_bytes())
+            .write_all(hex::encode(serializer.into_inner().into_inner()).as_bytes())
             .map_err(Error::Io)?;
-            
+        output.write_all(b"\n").map_err(Error::Io)?;
     } else {
         let mut serializer = rmp_serde::Serializer::new(output);
         serde_transcode::transcode(&mut deserializer, &mut serializer)
