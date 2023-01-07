@@ -33,6 +33,10 @@ pub struct Args {
     #[arg(long)]
     pub hex: bool,
 
+    /// Enable pretty output (formatted JSON, spacing for MessagePack when used with `--hex`)
+    #[arg(short, long)]
+    pub pretty: bool,
+
     /// Turn verbose mode on
     #[arg(short, long)]
     pub verbose: bool,

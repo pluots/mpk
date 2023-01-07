@@ -25,6 +25,8 @@ Options:
   -j, --to-json               Convert from MessagePack to JSON. (can't use with '--to-json')
   -m, --to-msgpack            Convert from JSON to MessagePack. (can't use with '--to-msgpack')
       --hex                   Use messagepack with hexadecimal strings instead of binary
+  -p, --pretty                Enable pretty output (formatted JSON, spacing for MessagePack when
+                              used with `--hex`)
   -v, --verbose               Turn verbose mode on
   -h, --help                  Print help information (use `--help` for more detail)
   -V, --version               Print version information
@@ -38,6 +40,14 @@ $ msgpack in.json -o out.msgpack
 $ msgpack out.msgpack
 {"name":"messagepack","age":20,"source":"github"}
 
+$ # Pretty formatting
+$ msgpack out.msgpack --pretty
+{
+  "name": "messagepack",
+  "age": 20,
+  "source": "github"
+}
+
 $ # Use stdin input and stdout output. You need to specify the destination type with
 $ # `--to-msgpack` or `--to-json` (`-m` or `-j`)
 $ cat in.json | msgpack --to-msgpack | xxd
@@ -50,4 +60,10 @@ $ msgpack --hex -i "82 a7 63 6f 6d 70 61 63 74 c3 a6 73 63 68 65 6d 61 00" --to-
 {"compact":true,"schema":0}
 $ msgpack --hex -i '{"compact":true,"schema":0}' --to-msgpack
 82a7636f6d70616374c3a6736368656d6100
+
+$ # And with pretty print:
+$ msgpack in.json --hex --pretty
+83a4 6e61 6d65 ab6d 6573 7361 6765 7061
+636b a361 6765 14a6 736f 7572 6365 a667
+6974 6875 62
 ```

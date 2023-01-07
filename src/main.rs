@@ -1,3 +1,8 @@
+//! MessagePack command line interface
+//!
+//! Install with `cargo install msgpack-cli` or get a prebuilt binary on the
+//! releases page: https://github.com/pluots/msgpack-cli/releases
+
 #![warn(clippy::pedantic)]
 #![warn(clippy::cargo)]
 #![warn(clippy::nursery)]
@@ -28,6 +33,7 @@ macro_rules! printvb {
     }};
 }
 
+/// Implementation of our struct in the `cli` module (needs to be separate because)
 impl Args {
     /// Validate there are no redundant arguments. If so, print a message and return a code
     /// to exit.
@@ -146,6 +152,31 @@ impl fmt::Display for Error {
     }
 }
 
+/// Simplify question mark returning
+impl From<io::Error> for Error {
+    fn from(value: io::Error) -> Self {
+        Self::Io(value)
+    }
+}
+
+impl From<rmp_serde::encode::Error> for Error {
+    fn from(value: rmp_serde::encode::Error) -> Self {
+        Self::MessagePak(value)
+    }
+}
+
+impl From<serde_json::Error> for Error {
+    fn from(value: serde_json::Error) -> Self {
+        Self::Json(value)
+    }
+}
+
+impl From<hex::FromHexError> for Error {
+    fn from(value: hex::FromHexError) -> Self {
+        Self::Hex(value)
+    }
+}
+
 /// Allow converting an Error to a `ExitCode` type
 impl From<Error> for ExitCode {
     fn from(value: Error) -> Self {
@@ -198,8 +229,23 @@ impl FType {
     }
 }
 
+/// Pretty print hex from a string in 8 groups of 4
+fn write_pretty_hex<W: Write>(out: &mut W, in_: &str) -> Result<(), Error> {
+    for (i, chunk) in in_.as_bytes().chunks(4).enumerate() {
+        if i > 0 && i % 8 == 0 {
+            out.write_all(b"\n")?;
+        } else if i > 0 {
+            out.write_all(b" ")?;
+        }
+
+        out.write_all(chunk)?;
+    }
+
+    Ok(())
+}
+
 /// Write messagepack from input to outpu
-fn mp_to_json<R, W>(input: &mut R, output: &mut W, read_hex: bool) -> Result<(), Error>
+fn mp_to_json<R, W>(input: &mut R, output: &mut W, use_hex: bool, pretty: bool) -> Result<(), Error>
 where
     R: Read,
     W: Write,
@@ -207,57 +253,66 @@ where
     printvb!("transcoding from MessagePack to JSON");
 
     let mut inbuf = Vec::new();
-    let byte_count = input.read_to_end(&mut inbuf).map_err(Error::Io)?;
+    let byte_count = input.read_to_end(&mut inbuf)?;
     printvb!("read {byte_count} bytes");
 
     let hex_buf: Vec<u8>;
 
     // If we are requested to decode the hex input, do so
-    let deser_buf = if read_hex {
+    let deser_buf = if use_hex {
         printvb!("decoding hex string input");
         inbuf.retain(|c| !c.is_ascii_whitespace());
-        hex_buf = hex::decode(inbuf).map_err(Error::Hex)?;
+        hex_buf = hex::decode(inbuf)?;
         hex_buf.as_slice()
     } else {
         inbuf.as_slice()
     };
 
     let mut deserializer = rmp_serde::Deserializer::new(deser_buf);
-    let mut serializer = serde_json::Serializer::new(output);
-    serde_transcode::transcode(&mut deserializer, &mut serializer).map_err(Error::Json)?;
+    let out_writer;
+
+    if pretty {
+        let mut serializer = serde_json::Serializer::pretty(output);
+        serde_transcode::transcode(&mut deserializer, &mut serializer)?;
+        out_writer = serializer.into_inner();
+    } else {
+        let mut serializer = serde_json::Serializer::new(output);
+        serde_transcode::transcode(&mut deserializer, &mut serializer)?;
+        out_writer = serializer.into_inner();
+    };
 
     // Return ownership of the output
-    serializer
-        .into_inner()
-        .write_all(b"\n")
-        .map_err(Error::Io)?;
+    out_writer.write_all(b"\n")?;
     Ok(())
 }
 
 /// Write json to messagepack output. This is streaming
-fn json_to_mp<R, W>(input: &mut R, output: &mut W, write_hex: bool) -> Result<(), Error>
+fn json_to_mp<R, W>(input: &mut R, output: &mut W, use_hex: bool, pretty: bool) -> Result<(), Error>
 where
     R: Read,
     W: Write,
 {
     let mut deserializer = serde_json::Deserializer::from_reader(input);
 
-    if write_hex {
+    if use_hex {
         printvb!("using hex string output");
         let hex_buf = Vec::new();
         let mut serializer = rmp_serde::Serializer::new(io::Cursor::new(hex_buf));
 
-        serde_transcode::transcode(&mut deserializer, &mut serializer)
-            .map_err(Error::MessagePak)?;
+        serde_transcode::transcode(&mut deserializer, &mut serializer)?;
 
-        output
-            .write_all(hex::encode(serializer.into_inner().into_inner()).as_bytes())
-            .map_err(Error::Io)?;
-        output.write_all(b"\n").map_err(Error::Io)?;
+        let str_out = hex::encode(serializer.into_inner().into_inner());
+
+        if pretty {
+            write_pretty_hex(output, &str_out)?;
+        } else {
+            output.write_all(str_out.as_bytes())?;
+        }
+
+        output.write_all(b"\n")?;
     } else {
         let mut serializer = rmp_serde::Serializer::new(output);
-        serde_transcode::transcode(&mut deserializer, &mut serializer)
-            .map_err(Error::MessagePak)?;
+        serde_transcode::transcode(&mut deserializer, &mut serializer)?;
     };
 
     Ok(())
@@ -272,9 +327,9 @@ fn main_runner() -> Result<(), Error> {
     let mut output = args.get_output()?;
 
     if args.to_json {
-        mp_to_json(&mut input, &mut output, args.hex)?;
+        mp_to_json(&mut input, &mut output, args.hex, args.pretty)?;
     } else {
-        json_to_mp(&mut input, &mut output, args.hex)?;
+        json_to_mp(&mut input, &mut output, args.hex, args.pretty)?;
     }
 
     Ok(())
