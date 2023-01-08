@@ -103,12 +103,14 @@ jobs:
 
           # Remove leading 'v' for use where needed
           ref_name_stripped=$(echo "$ref_name" | perl -0pe 's/^v//')
-          echo "\nRef name: \"$ref_name\""
-          echo "\nRef name stripped: \"$ref_name_stripped\""
+          echo "Ref name: '$ref_name'"
+          echo "Ref name stripped: '$ref_name_stripped'"
 
-          staging_dir="msgpack-$ref_name-${{ matrix.target }}"
+          staging_dir="msgpack-${ref_name}-${{ matrix.target }}"
           echo "STAGING_DIR=$staging_dir" >> "$GITHUB_ENV"
           echo "RELEASE_VERSION=$ref_name_stripped" >> "$GITHUB_ENV"
+
+          echo "staging_dir: ${staging_dir}"
 
           STAGING_DIR=$staging_dir \
           CARGO_ASSETDIR="$cargo_outdir" \
