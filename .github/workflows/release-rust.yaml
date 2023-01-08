@@ -71,9 +71,9 @@ jobs:
         run: cargo build --release --verbose --target ${{ matrix.target }}
       - name: Show output
         run: |
-          ls target
-          ls "target/${{ matrix.target }}"
-          ls "target/${{ matrix.target }}/release"
+          ls ${{ env.TARGET_DIR }}
+          ls "${{ env.TARGET_DIR }}/${{ matrix.target }}"
+          ls "${{ env.TARGET_DIR }}/${{ matrix.target }}/release"
         # Create .zip or .tar.gz file
       - name: Build archive
         shell: bash
@@ -92,7 +92,7 @@ jobs:
 
           STAGING_DIR="msgpack-$ref_name-${{ matrix.target }}" \
           CARGO_ASSETDIR="$cargo_outdir" \
-          CARGO_BUILDDIR="${{ env.TARGET_DIR }}" \
+          CARGO_BUILDDIR="${{ env.TARGET_DIR }}/${{ matrix.target }}/release" \
           RELEASE_VERSION="$ref_name_stripped" \
           dist/create_release.sh
 
