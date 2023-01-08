@@ -66,7 +66,6 @@ jobs:
       - uses: dtolnay/rust-toolchain@nightly
         with:
           targets: ${{matrix.target}}
-        # Debugging aid
           
       - name: Configure cross
         if: matrix.cargo == 'cross'
@@ -107,11 +106,25 @@ jobs:
           echo "\nRef name: \"$ref_name\""
           echo "\nRef name stripped: \"$ref_name_stripped\""
 
-          STAGING_DIR="msgpack-$ref_name-${{ matrix.target }}" \
+          staging_dir="msgpack-$ref_name-${{ matrix.target }}"
+          echo "STAGING_DIR=$staging_dir" >> "$GITHUB_ENV"
+          echo "RELEASE_VERSION=$ref_name_stripped" >> "$GITHUB_ENV"
+
+          STAGING_DIR=$staging_dir \
           CARGO_ASSETDIR="$cargo_outdir" \
           CARGO_BUILDDIR="${{ env.TARGET_DIR }}/${{ matrix.target }}/release" \
           RELEASE_VERSION="$ref_name_stripped" \
           dist/create_release.sh
+
+
+          # Create debian packages
+          if [ ${{ matrix.os }} = 'ubuntu-latest' ]; then
+            echo '==== creating .deb packages ===='
+            STAGING_DIR=$staging_dir \
+            TARGET=${{ matrix.target }} \
+            RELEASE_VERSION=$RELEASE_VERSION \
+            dist/build_deb.sh
+          fi
 
         # Upload to github
       - name: Release

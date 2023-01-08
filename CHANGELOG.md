@@ -5,6 +5,7 @@
 ## [Unreleased] - ReleaseDate
 
 - Correct makefile autocompletions install targets
+- Added `.deb` output
 
 ## [0.1.2] - 2023-01-08
 

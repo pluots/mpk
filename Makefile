@@ -64,7 +64,7 @@ endif
 ifeq ($(INSTALL_COMPLETIONS),true)
 	INSTALLEDAC=0; \
 	if [ -d "${COMPDEST_BASH}" ]; then \
-		install "${COMPLETESOURCE}/msgpack.bash" "${COMPDEST_BASH}/msgpack.bash"; \
+		install "${COMPLETESOURCE}/msgpack.bash" "${COMPDEST_BASH}/msgpack"; \
 		echo installed bash autocomplete; \
 		INSTALLEDAC=1; \
 	fi; \
@@ -100,6 +100,6 @@ uninstall:
 	$(info cleaning install directories)
 	rm -f ${BINDEST}/msgpack
 	rm -f ${MANDEST}/msgpack.1
-	rm -f ${COMPDEST_BASH}/msgpack.bash
+	rm -f ${COMPDEST_BASH}/msgpack
 	rm -f ${COMPDEST_FISH}/msgpack.fish
 	rm -f ${COMPDEST_ZSH}/_msgpack
