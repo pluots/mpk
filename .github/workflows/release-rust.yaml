@@ -90,39 +90,12 @@ jobs:
           echo "\nRef name: \"$ref_name\""
           echo "\nRef name stripped: \"$ref_name_stripped\""
 
-          staging="msgpack-$ref_name-${{ matrix.target }}"
-          mkdir -p "$staging"/{completion,doc}
+          STAGING_DIR="msgpack-$ref_name-${{ matrix.target }}" \
+          CARGO_ASSETDIR="$cargo_outdir" \
+          CARGO_BUILDDIR="./target" \
+          RELEASE_VERSION="$ref_name_stripped" \
+          dist/create_release.sh
 
-          # Remove the "unreleased" section from our changelog
-          perl -0777 -i -pe "s/(<\!-- next-header -->.*## \[Unreleased\].*?\n)(?=## |<\!--)//gms" CHANGELOG.md
-
-          # Create Makefile.dist for shipping with the package
-          sh dist/create_install_makefile.sh
-          
-          cp {README.md,LICENSE} "$staging/"
-          cp Makefile.dist "$staging/Makefile"
-          cp CHANGELOG.md "$staging/doc/"
-          # Copy manpages
-          cp "$cargo_outdir"/msgpack.1 "$staging/doc"
-          cp "$cargo_outdir"/{_msgpack,_msgpack.ps1,msgpack.bash,msgpack.elv,msgpack.fish} "$staging/completion"
-
-          # Build RNOTES.md, which we will use for our Github release (not shipped in zip)
-          # Select the release notes from our latest version only
-          perl -0777 -ne "print /(## \[$ref_name_stripped\].*?\n)(?=\n*^(?:## |<\!--))/gms" CHANGELOG.md > RNOTES.md
-          # Select the diff URL for this version only
-          perl -0777 -ne "print /\n\[$ref_name_stripped\]:.*?\n/gms" CHANGELOG.md >> RNOTES.md
-
-          echo "Release notes:" && cat RNOTES.md
-
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            cp "target/${{ matrix.target }}/release/msgpack.exe" "$staging/"
-            7z a "$staging.zip" "$staging"
-            echo "ASSET=$staging.zip" >> $GITHUB_ENV
-          else
-            cp "target/${{ matrix.target }}/release/msgpack" "$staging/"
-            tar czf "$staging.tar.gz" "$staging"
-            echo "ASSET=$staging.tar.gz" >> $GITHUB_ENV
-          fi
         # Upload to github
       - name: Release
         uses: softprops/action-gh-release@v1

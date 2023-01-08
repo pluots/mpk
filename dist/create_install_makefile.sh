@@ -1,6 +1,8 @@
 #!/bin/sh
 # Generate a makefile suitable for prebuilt binaries
 
+set -e -u -x -o pipefail
+
 # Remove all targets except install & uninstall
 perl -0777 -pe 's/^(?!install|uninstall)\w+:.*?(?=^\w+:|\Z)//gms' Makefile > Makefile.dist
 
