@@ -74,7 +74,7 @@ jobs:
         run: |
           wget https://github.com/cross-rs/cross/releases/download/v0.2.4/cross-x86_64-unknown-linux-gnu.tar.gz
           mkdir ~/cross
-          tar -xzvf cross-x86_64-unknown-linux-gnu.tar.gz --directory /cross
+          tar -xzvf cross-x86_64-unknown-linux-gnu.tar.gz --directory ~/cross
           echo CARGO="~/cross/cross" >> "$GITHUB_ENV"
 
       - name: Show commands
