@@ -103,8 +103,8 @@ echo "ASSET=${dpkg_output}" >> "$GITHUB_ENV"
 # Verify the package works if we can
 if [ "$do_test" = "true" ]; then
     echo "Running install test"
-    dpkg -i "${dpkg_output}"
+    fakeroot dpkg -i "${dpkg_output}"
     msgpack --help
     man 1 msgpack
-    dpkg -r "${dpkg_basename}"
+    fakeroot dpkg -r "${dpkg_basename}"
 fi
