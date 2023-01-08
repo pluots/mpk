@@ -68,15 +68,6 @@ jobs:
         with:
           targets: ${{matrix.target}}
         # Debugging aid
-      - name: Show commands
-        run: |
-          echo pwd:
-          pwd
-          echo ls:
-          ls
-          echo "cargo command is: ${{ env.CARGO }}"
-          echo "target flag is: ${{ env.TARGET_FLAGS }}"
-          echo "target dir is: ${{ env.TARGET_DIR }}"
           
       - name: Configure cross
         if: matrix.cargo == 'cross'
@@ -86,9 +77,19 @@ jobs:
           tar -xzvf cross-x86_64-unknown-linux-gnu.tar.gz --directory /cross
           echo CARGO="/cross/cross" >> "$GITHUB_ENV"
 
+      - name: Show commands
+        run: |
+          echo pwd:
+          pwd
+          echo ls:
+          ls
+          echo "cargo command is: ${CARGO}"
+          echo "target flag is: ${{ env.TARGET_FLAGS }}"
+          echo "target dir is: ${{ env.TARGET_DIR }}"
+
         # Perform build
       - name: Build binary
-        run: cargo build --release --verbose --target ${{ matrix.target }}
+        run: '"$CARGO" build --release --verbose --target ${{ matrix.target }}'
       - name: Show output
         run: |
           ls ${{ env.TARGET_DIR }}
