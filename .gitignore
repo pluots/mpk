@@ -2,3 +2,10 @@
 .vscode
 large-file.json
 large-file.msgpack
+staging
+staging.tar.gz
+staging.zip
+RELNOTES.md
+Makefile.dist
+CHANGELOG.md.dist
+gh.env

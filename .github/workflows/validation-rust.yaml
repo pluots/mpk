@@ -113,6 +113,17 @@ jobs:
             test ! -f /usr/share/bash-completion/completions/msgpack.bash
           fi
 
+          mkdir -p ~/.local
+          
+          echo running install with prefix
+          PREFIX="~/local" make install
+          echo testing msgpack presence
+          test -f ~/local/bin/msgpack
+          echo running uninstall with prefix
+          PREFIX="~/local" make uninstall
+          echo testing msgpack presence
+          test ! -f ~/local/bin/msgpack
+
   fmt:
     name: "Format (cargo fmt)"
     runs-on: ubuntu-latest

@@ -10,6 +10,11 @@ DESTDIR=
 PREFIX=/usr/local
 MANDEST=${DESTDIR}${PREFIX}/share/man/man1
 BINDEST=${DESTDIR}${PREFIX}/bin
+INSTALL_COMPLETIONS=true
+
+ifneq ($(DESTDIR),"")
+INSTALL_COMPLETIONS=false
+endif
 
 COMPDEST_PFX=/usr/share
 COMPDEST_BASH=${COMPDEST_PFX}/bash-completion/completions
@@ -56,6 +61,7 @@ endif
 	install ${BINSOURCE}/msgpack ${BINDEST}/msgpack
 	install -m 644 ${MANSOURCE}/msgpack.1 ${MANDEST}/msgpack.1
 
+ifeq ($(INSTALL_COMPLETIONS),true)
 	INSTALLEDAC=0; \
 	if [ -d "${COMPDEST_BASH}" ]; then \
 		install "${COMPLETESOURCE}/msgpack.bash" "${COMPDEST_BASH}/msgpack.bash"; \
@@ -77,6 +83,7 @@ endif
 	fi
 
 	$(info install completed successfully)
+endif
 
 clean:
 ifndef CARGO

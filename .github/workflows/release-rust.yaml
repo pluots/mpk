@@ -92,7 +92,7 @@ jobs:
 
           STAGING_DIR="msgpack-$ref_name-${{ matrix.target }}" \
           CARGO_ASSETDIR="$cargo_outdir" \
-          CARGO_BUILDDIR="./target" \
+          CARGO_BUILDDIR="${{ env.TARGET_DIR }}" \
           RELEASE_VERSION="$ref_name_stripped" \
           dist/create_release.sh
 
@@ -103,7 +103,7 @@ jobs:
         env:
           GITHUB_REPOSITORY: pluots/msgpack
         with:
-          body_path: RNOTES.md
+          body_path: RELNOTES.md
           # note you'll typically need to create a personal access token
           # with permissions to create releases in the other repo
           token: ${{ secrets.GITHUB_TOKEN }}
