@@ -6,7 +6,7 @@
 set -e -u -x -o pipefail
 
 
-project_name=msgpack
+project_name="msgpack"
 project_maintainer="Trevor Gross"
 project_homepage="https://github.com/pluots/msgpack-cli"
 staging_dir="$STAGING_DIR"
@@ -17,6 +17,7 @@ dpkg_dir="${DPKG_STAGING}/dpkg"
 mkdir -p "${dpkg_dir}"
 
 dpkg_basename="$project_name"
+do_test="${DO_TEST:-false}" 
 
 # dpkg_conflicts=msgpack-musl
 
@@ -91,10 +92,19 @@ Description: A simple tool for converting between MessagePack and JSON formats
 EOF
 # Conflicts: ${dpkg_conflicts}
 
-dpkg_outdir="${DPKG_STAGING}/${DPKG_NAME}"
-echo "DPKG_OUTDIR=${dpkg_outdir}" >> "$GITHUB_ENV"
+dpkg_output="${DPKG_STAGING}/${DPKG_NAME}"
+echo "dpkg_output=${dpkg_output}" >> "$GITHUB_ENV"
 
 # build dpkg
-fakeroot dpkg-deb --build "${dpkg_dir}" "${dpkg_outdir}"
+fakeroot dpkg-deb -Zxz --build "${dpkg_dir}" "${dpkg_output}"
 
-echo "ASSET=${dpkg_outdir}" >> "$GITHUB_ENV"
+echo "ASSET=${dpkg_output}" >> "$GITHUB_ENV"
+
+# Verify the package works if we can
+if [ "$do_test" = "true" ]; then
+    echo "Running install test"
+    dpkg -i "${dpkg_output}"
+    msgpack --help
+    man 1 msgpack
+    dpkg -r "${dpkg_basename}"
+fi

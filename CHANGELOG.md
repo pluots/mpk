@@ -4,7 +4,7 @@
 
 ## [Unreleased] - ReleaseDate
 
-
+- Change dpkg compression from zstd to xz so we can install on Debian
 
 ## [0.1.3] - 2023-01-08
 

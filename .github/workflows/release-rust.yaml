@@ -119,10 +119,18 @@ jobs:
           # Create debian packages
           if [ "${{ matrix.os }}" = 'ubuntu-latest' ]; then
             echo '==== creating .deb packages ===='
+            
+            # On our native platform, make sure we can install
+            if [ "${{ matrix.cargo }}" = 'cargo' ]; then
+              do_test=true
+            fi
+            
             STAGING_DIR="$staging_dir" \
             TARGET=${{ matrix.target }} \
             RELEASE_VERSION="$ref_name_stripped" \
+            DO_TEST="$do_test" \
             dist/build_deb.sh
+            
           fi
 
         # Upload to github
