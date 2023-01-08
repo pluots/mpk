@@ -49,7 +49,6 @@ jobs:
             cargo: cargo
 
     env:
-      CARGO: cargo
       TARGET_DIR: ./target
       TARGET_FLAGS: ""
 
@@ -72,10 +71,7 @@ jobs:
       - name: Configure cross
         if: matrix.cargo == 'cross'
         run: |
-          wget https://github.com/cross-rs/cross/releases/download/v0.2.4/cross-x86_64-unknown-linux-gnu.tar.gz
-          mkdir ~/cross
-          tar -xzvf cross-x86_64-unknown-linux-gnu.tar.gz --directory ~/cross
-          echo CARGO="~/cross/cross" >> "$GITHUB_ENV"
+          cargo install cross
 
       - name: Show commands
         run: |
@@ -83,13 +79,13 @@ jobs:
           pwd
           echo ls:
           ls
-          echo "cargo command is: ${CARGO}"
+          echo "cargo command is: ${{ matrix.cargo }}""
           echo "target flag is: ${{ env.TARGET_FLAGS }}"
           echo "target dir is: ${{ env.TARGET_DIR }}"
 
         # Perform build
       - name: Build binary
-        run: '"$CARGO" build --release --verbose --target ${{ matrix.target }}'
+        run: ${{ matrix.cargo }} build --release --verbose --target ${{ matrix.target }}
       - name: Show output
         run: |
           ls ${{ env.TARGET_DIR }}
