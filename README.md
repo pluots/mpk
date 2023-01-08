@@ -40,13 +40,17 @@ $ msgpack in.json --hex --pretty
 ## Installing
 
 The easiest way to install is to go the [releases] page and download a version.
+If you use Debian or Ubuntu, using the prebuilt `.deb` package is easiest; just
+download and install with with `dpkg -i msgpack-download-path.deb`.
+`dpkg -r msgpack` will uninstall if needed.
+
+For other systems download the correct target and extract the archive. You can
+then either use the binary directly, or use `make install` to put it in your
+system path (along with manual pages and autocomplete scripts). `make uninstall`
+can reverse this.
+
 Alternatively, you can install with Cargo via `cargo install msgpack-cli`, or
 build the source yourself with `cargo build --release`.
-
-In either of these cases, you will want to make sure that the executables are in
-the right path. You can use the provided makefile with `make install` to set
-this up automatically, copy the binary to your preferred location (the manpage
-and autocomplete scripts are also included).
 
 [releases]: https://github.com/pluots/msgpack-cli/releases
 
