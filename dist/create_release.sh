@@ -2,7 +2,8 @@
 
 # Make a release archive
 
-set -e -u -x -o pipefail
+set -e -u -x
+# set -o pipefail
 
 staging="$STAGING_DIR"
 assetdir="$CARGO_ASSETDIR"
