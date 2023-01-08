@@ -113,10 +113,10 @@ jobs:
           echo "staging_dir: ${staging_dir}"
 
           STAGING_DIR="$staging_dir" \
-          CARGO_ASSETDIR="$cargo_outdir" \
-          CARGO_BUILDDIR="${{ env.TARGET_DIR }}/${{ matrix.target }}/release" \
-          RELEASE_VERSION="$ref_name_stripped" \
-          dist/create_release.sh
+            CARGO_ASSETDIR="$cargo_outdir" \
+            CARGO_BUILDDIR="${{ env.TARGET_DIR }}/${{ matrix.target }}/release" \
+            RELEASE_VERSION="$ref_name_stripped" \
+            dist/create_release.sh
 
           # Create debian packages
           if [ "${{ matrix.os }}" = 'ubuntu-latest' ]; then
@@ -128,11 +128,12 @@ jobs:
             fi
             
             # Need sudo because of `DO_TEST`
-            STAGING_DIR="$staging_dir" \
-            TARGET=${{ matrix.target }} \
-            RELEASE_VERSION="$ref_name_stripped" \
-            DO_TEST="$do_test" \
-            sudo dist/build_deb.sh
+            sudo \
+              STAGING_DIR="$staging_dir" \
+              TARGET=${{ matrix.target }} \
+              RELEASE_VERSION="$ref_name_stripped" \
+              DO_TEST="$do_test" \
+              dist/build_deb.sh
             
           fi
 
