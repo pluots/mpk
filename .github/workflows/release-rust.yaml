@@ -79,8 +79,8 @@ jobs:
           pwd
           echo ls:
           ls
-          echo "cargo command is: ${{ matrix.cargo }}""
-          echo "target flag is: ${{ env.TARGET_FLAGS }}"
+          echo "cargo command is: ${{ matrix.cargo }}"
+          echo "target flags are: ${{ env.TARGET_FLAGS }}"
           echo "target dir is: ${{ env.TARGET_DIR }}"
 
         # Perform build
