@@ -102,7 +102,7 @@ jobs:
           ref_name=${GITHUB_REF##*/}
 
           # Remove leading 'v' for use where needed
-          ref_name_stripped=$(echo $ref_name | perl -0pe 's/^v//')
+          ref_name_stripped=$(echo "$ref_name" | perl -0pe 's/^v//')
           echo "\nRef name: \"$ref_name\""
           echo "\nRef name stripped: \"$ref_name_stripped\""
 
@@ -116,13 +116,12 @@ jobs:
           RELEASE_VERSION="$ref_name_stripped" \
           dist/create_release.sh
 
-
           # Create debian packages
-          if [ ${{ matrix.os }} = 'ubuntu-latest' ]; then
+          if [ "${{ matrix.os }}" = 'ubuntu-latest' ]; then
             echo '==== creating .deb packages ===='
-            STAGING_DIR=$staging_dir \
+            STAGING_DIR="$staging_dir" \
             TARGET=${{ matrix.target }} \
-            RELEASE_VERSION=$RELEASE_VERSION \
+            RELEASE_VERSION="$ref_name_stripped" \
             dist/build_deb.sh
           fi
 

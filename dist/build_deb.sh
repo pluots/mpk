@@ -13,10 +13,11 @@ staging_dir="$STAGING_DIR"
 
 copyright_years="2023 - "$(date "+%Y")
 DPKG_STAGING="./debian-package"
-DPKG_DIR="${DPKG_STAGING}/dpkg"
-mkdir -p "${DPKG_DIR}"
+dpkg_dir="${DPKG_STAGING}/dpkg"
+mkdir -p "${dpkg_dir}"
 
 dpkg_basename="$project_name"
+
 # dpkg_conflicts=msgpack-musl
 
 # case "$TARGET" in *-musl) dpkg_basename=${project_name}-musl
@@ -24,6 +25,10 @@ dpkg_basename="$project_name"
 # esac;
 
 dpkg_version=${RELEASE_VERSION}
+
+echo "Building .deb for '${project_name}' version '${dpkg_version}'"
+echo "Staging directory: ${staging_dir}"
+echo "Staging directory: ${staging_dir}"
 
 unset dpkg_arch
 case "$TARGET" in
@@ -38,24 +43,24 @@ DPKG_NAME="${dpkg_basename}_${dpkg_version}_${dpkg_arch}.deb"
 # echo "DPKG_NAME=${DPKG_NAME}" >> $GITHUB_OUTPUT
 
 # Binary
-install -Dm755 "${staging_dir}/${project_name}" "${DPKG_DIR}/usr/bin/${project_name}"
+install -Dm755 "${staging_dir}/${project_name}" "${dpkg_dir}/usr/bin/${project_name}"
 
 # Man page
-install -Dm644 "${staging_dir}/doc/${project_name}.1" "${DPKG_DIR}/usr/share/man/man1/${project_name}.1"
-gzip -n --best "${DPKG_DIR}/usr/share/man/man1/${project_name}.1"
+install -Dm644 "${staging_dir}/doc/${project_name}.1" "${dpkg_dir}/usr/share/man/man1/${project_name}.1"
+gzip -n --best "${dpkg_dir}/usr/share/man/man1/${project_name}.1"
 
 # Autocompletion files
-install -Dm644 "${staging_dir}/completion/msgpack.bash" "${DPKG_DIR}/usr/share/bash-completion/completions/$project_name"
-install -Dm644 "${staging_dir}/completion/msgpack.fish" "${DPKG_DIR}/usr/share/fish/vendor_completions.d/$project_name.fish"
-install -Dm644 "${staging_dir}/completion/_msgpack" "${DPKG_DIR}/usr/share/zsh/vendor-completions/_$project_name"
+install -Dm644 "${staging_dir}/completion/msgpack.bash" "${dpkg_dir}/usr/share/bash-completion/completions/$project_name"
+install -Dm644 "${staging_dir}/completion/msgpack.fish" "${dpkg_dir}/usr/share/fish/vendor_completions.d/$project_name.fish"
+install -Dm644 "${staging_dir}/completion/_msgpack" "${dpkg_dir}/usr/share/zsh/vendor-completions/_$project_name"
 
 # README and LICENSE
-install -Dm644 "${staging_dir}/README.md" "${DPKG_DIR}/usr/share/doc/${dpkg_basename}/README.md"
-install -Dm644 "${staging_dir}/LICENSE" "${DPKG_DIR}/usr/share/doc/${dpkg_basename}/LICENSE"
-install -Dm644 "${staging_dir}/doc/CHANGELOG.md" "${DPKG_DIR}/usr/share/doc/${dpkg_basename}/changelog"
-gzip -n --best "${DPKG_DIR}/usr/share/doc/${dpkg_basename}/changelog"
+install -Dm644 "${staging_dir}/README.md" "${dpkg_dir}/usr/share/doc/${dpkg_basename}/README.md"
+install -Dm644 "${staging_dir}/LICENSE" "${dpkg_dir}/usr/share/doc/${dpkg_basename}/LICENSE"
+install -Dm644 "${staging_dir}/doc/CHANGELOG.md" "${dpkg_dir}/usr/share/doc/${dpkg_basename}/changelog"
+gzip -n --best "${dpkg_dir}/usr/share/doc/${dpkg_basename}/changelog"
 
-cat > "${DPKG_DIR}/usr/share/doc/${dpkg_basename}/copyright" <<EOF
+cat > "${dpkg_dir}/usr/share/doc/${dpkg_basename}/copyright" <<EOF
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: ${project_name}
 Source: ${project_homepage}
@@ -69,11 +74,11 @@ License: Apache-2.0
     file /usr/share/common-licenses/Apache-2.0.
 EOF
 
-chmod 644 "${DPKG_DIR}/usr/share/doc/${dpkg_basename}/copyright"
+chmod 644 "${dpkg_dir}/usr/share/doc/${dpkg_basename}/copyright"
 
 # control file
-mkdir -p "${DPKG_DIR}/DEBIAN"
-cat > "${DPKG_DIR}/DEBIAN/control" <<EOF
+mkdir -p "${dpkg_dir}/DEBIAN"
+cat > "${dpkg_dir}/DEBIAN/control" <<EOF
 Package: ${dpkg_basename}
 Version: ${dpkg_version}
 Section: utils
@@ -86,10 +91,10 @@ Description: A simple tool for converting between MessagePack and JSON formats
 EOF
 # Conflicts: ${dpkg_conflicts}
 
-DPKG_PATH="${DPKG_STAGING}/${DPKG_NAME}"
-echo "DPKG_PATH=${DPKG_PATH}" >> "$GITHUB_ENV"
+dpkg_outdir="${DPKG_STAGING}/${DPKG_NAME}"
+echo "DPKG_OUTDIR=${dpkg_outdir}" >> "$GITHUB_ENV"
 
 # build dpkg
-fakeroot dpkg-deb --build "${DPKG_DIR}" "${DPKG_PATH}"
+fakeroot dpkg-deb --build "${dpkg_dir}" "${dpkg_outdir}"
 
-echo "ASSET=${DPKG_PATH}" >> "$GITHUB_ENV"
+echo "ASSET=${dpkg_outdir}" >> "$GITHUB_ENV"
