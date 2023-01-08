@@ -112,7 +112,7 @@ jobs:
 
           echo "staging_dir: ${staging_dir}"
 
-          STAGING_DIR=$staging_dir \
+          STAGING_DIR="$staging_dir" \
           CARGO_ASSETDIR="$cargo_outdir" \
           CARGO_BUILDDIR="${{ env.TARGET_DIR }}/${{ matrix.target }}/release" \
           RELEASE_VERSION="$ref_name_stripped" \

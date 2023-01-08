@@ -9,11 +9,11 @@ set -e -u -x -o pipefail
 project_name="msgpack"
 project_maintainer="Trevor Gross"
 project_homepage="https://github.com/pluots/msgpack-cli"
-staging_dir="$STAGING_DIR"
+stage_dir_root="$STAGING_DIR"
 
 copyright_years="2023 - "$(date "+%Y")
-DPKG_STAGING="./debian-package"
-dpkg_dir="${DPKG_STAGING}/dpkg"
+dpkg_stage_root="./debian-package"
+dpkg_dir="${dpkg_stage_root}/dpkg"
 mkdir -p "${dpkg_dir}"
 
 dpkg_basename="$project_name"
@@ -28,8 +28,9 @@ do_test="${DO_TEST:-false}"
 dpkg_version=${RELEASE_VERSION}
 
 echo "Building .deb for '${project_name}' version '${dpkg_version}'"
-echo "Staging directory: ${staging_dir}"
-echo "Staging directory: ${staging_dir}"
+echo "Staging directory: ${stage_dir_root}"
+echo "Dpkg staging directory: ${dpkg_dir}"
+echo "Do test: ${do_test}"
 
 unset dpkg_arch
 case "$TARGET" in
@@ -40,25 +41,27 @@ case "$TARGET" in
     *) dpkg_arch=notset ;;
 esac;
 
-DPKG_NAME="${dpkg_basename}_${dpkg_version}_${dpkg_arch}.deb"
-# echo "DPKG_NAME=${DPKG_NAME}" >> $GITHUB_OUTPUT
+dpkg_file_name="${dpkg_basename}_${dpkg_version}_${dpkg_arch}.deb"
+# echo "dpkg_file_name=${dpkg_file_name}" >> $GITHUB_OUTPUT
+
+echo "Dpkg file name: ${dpkg_file_name}"
 
 # Binary
-install -Dm755 "${staging_dir}/${project_name}" "${dpkg_dir}/usr/bin/${project_name}"
+install -Dm755 "${stage_dir_root}/${project_name}" "${dpkg_dir}/usr/bin/${project_name}"
 
 # Man page
-install -Dm644 "${staging_dir}/doc/${project_name}.1" "${dpkg_dir}/usr/share/man/man1/${project_name}.1"
+install -Dm644 "${stage_dir_root}/doc/${project_name}.1" "${dpkg_dir}/usr/share/man/man1/${project_name}.1"
 gzip -n --best "${dpkg_dir}/usr/share/man/man1/${project_name}.1"
 
 # Autocompletion files
-install -Dm644 "${staging_dir}/completion/msgpack.bash" "${dpkg_dir}/usr/share/bash-completion/completions/$project_name"
-install -Dm644 "${staging_dir}/completion/msgpack.fish" "${dpkg_dir}/usr/share/fish/vendor_completions.d/$project_name.fish"
-install -Dm644 "${staging_dir}/completion/_msgpack" "${dpkg_dir}/usr/share/zsh/vendor-completions/_$project_name"
+install -Dm644 "${stage_dir_root}/completion/msgpack.bash" "${dpkg_dir}/usr/share/bash-completion/completions/$project_name"
+install -Dm644 "${stage_dir_root}/completion/msgpack.fish" "${dpkg_dir}/usr/share/fish/vendor_completions.d/$project_name.fish"
+install -Dm644 "${stage_dir_root}/completion/_msgpack" "${dpkg_dir}/usr/share/zsh/vendor-completions/_$project_name"
 
 # README and LICENSE
-install -Dm644 "${staging_dir}/README.md" "${dpkg_dir}/usr/share/doc/${dpkg_basename}/README.md"
-install -Dm644 "${staging_dir}/LICENSE" "${dpkg_dir}/usr/share/doc/${dpkg_basename}/LICENSE"
-install -Dm644 "${staging_dir}/doc/CHANGELOG.md" "${dpkg_dir}/usr/share/doc/${dpkg_basename}/changelog"
+install -Dm644 "${stage_dir_root}/README.md" "${dpkg_dir}/usr/share/doc/${dpkg_basename}/README.md"
+install -Dm644 "${stage_dir_root}/LICENSE" "${dpkg_dir}/usr/share/doc/${dpkg_basename}/LICENSE"
+install -Dm644 "${stage_dir_root}/doc/CHANGELOG.md" "${dpkg_dir}/usr/share/doc/${dpkg_basename}/changelog"
 gzip -n --best "${dpkg_dir}/usr/share/doc/${dpkg_basename}/changelog"
 
 cat > "${dpkg_dir}/usr/share/doc/${dpkg_basename}/copyright" <<EOF
@@ -92,7 +95,7 @@ Description: A simple tool for converting between MessagePack and JSON formats
 EOF
 # Conflicts: ${dpkg_conflicts}
 
-dpkg_output="${DPKG_STAGING}/${DPKG_NAME}"
+dpkg_output="${dpkg_stage_root}/${dpkg_file_name}"
 echo "dpkg_output=${dpkg_output}" >> "$GITHUB_ENV"
 
 # build dpkg
