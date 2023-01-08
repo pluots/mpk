@@ -127,12 +127,14 @@ jobs:
               do_test=true
             fi
             
-            # Need sudo because of `DO_TEST`
+            # Need sudo because of `DO_TEST`, which means we need to pass all
+            # environment variables inside the sudo
             sudo \
               STAGING_DIR="$staging_dir" \
               TARGET=${{ matrix.target }} \
               RELEASE_VERSION="$ref_name_stripped" \
               DO_TEST="$do_test" \
+              GITHUB_ENV="$GITHUB_ENV" \
               dist/build_deb.sh
             
           fi
