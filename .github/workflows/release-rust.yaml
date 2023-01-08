@@ -10,6 +10,7 @@ on:
 
 env:
   RUSTFLAGS: "-D warnings"
+  CARGO_UNSTABLE_SPARSE_REGISTRY: true
 
 jobs:
   build_release:
@@ -21,21 +22,31 @@ jobs:
           - name: linux x64
             os: ubuntu-latest
             target: x86_64-unknown-linux-musl
+            cargo: cargo
           - name: linux aarch
             os: ubuntu-latest
             target: aarch64-unknown-linux-gnu
+            cargo: cross
+          - name: linux arm
+            os: ubuntu-latest
+            target: arm-unknown-linux-gnueabihf
+            cargo: cross
           - name: macos x64
             os: macos-latest
             target: x86_64-apple-darwin
+            cargo: cargo
           - name: macos aarch
             os: macos-latest
             target: aarch64-apple-darwin
+            cargo: cargo
           - name: windows msvc
             os: windows-latest
             target: x86_64-pc-windows-msvc
+            cargo: cargo
           - name: windows gnu
             os: windows-latest
             target: x86_64-pc-windows-gnu
+            cargo: cargo
 
     env:
       CARGO: cargo
@@ -66,6 +77,15 @@ jobs:
           echo "cargo command is: ${{ env.CARGO }}"
           echo "target flag is: ${{ env.TARGET_FLAGS }}"
           echo "target dir is: ${{ env.TARGET_DIR }}"
+          
+      - name: Configure cross
+        if: matrix.cargo == 'cross'
+        run: |
+          wget https://github.com/cross-rs/cross/releases/download/v0.2.4/cross-x86_64-unknown-linux-gnu.tar.gz
+          mkdir /cross
+          tar -xzvf cross-x86_64-unknown-linux-gnu.tar.gz --directory /cross
+          echo CARGO="/cross/cross" >> "$GITHUB_ENV"
+
         # Perform build
       - name: Build binary
         run: cargo build --release --verbose --target ${{ matrix.target }}
