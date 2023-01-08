@@ -125,11 +125,12 @@ jobs:
               do_test=true
             fi
             
+            # Need sudo because of `DO_TEST`
             STAGING_DIR="$staging_dir" \
             TARGET=${{ matrix.target }} \
             RELEASE_VERSION="$ref_name_stripped" \
             DO_TEST="$do_test" \
-            dist/build_deb.sh
+            sudo dist/build_deb.sh
             
           fi
 

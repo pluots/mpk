@@ -102,9 +102,9 @@ echo "ASSET=${dpkg_output}" >> "$GITHUB_ENV"
 
 # Verify the package works if we can
 if [ "$do_test" = "true" ]; then
-    echo "Running install test"
-    fakeroot dpkg -i "${dpkg_output}"
+    echo "Running install test. Requires sudo"
+    dpkg -i "${dpkg_output}"
     msgpack --help
     man 1 msgpack
-    fakeroot dpkg -r "${dpkg_basename}"
+    dpkg -r "${dpkg_basename}"
 fi
