@@ -12,7 +12,7 @@ MANDEST=${DESTDIR}${PREFIX}/share/man/man1
 BINDEST=${DESTDIR}${PREFIX}/bin
 INSTALL_COMPLETIONS=true
 
-ifneq ($(DESTDIR),"")
+ifneq ($(DESTDIR),)
 INSTALL_COMPLETIONS=false
 endif
 
@@ -82,8 +82,11 @@ ifeq ($(INSTALL_COMPLETIONS),true)
 		echo did not find any directorys to install autocompletion scripts; \
 	fi
 
-	$(info install completed successfully)
+else
+	$(info skipping install of shell completion scripts)
 endif
+
+	$(info finished installation)
 
 clean:
 ifndef CARGO

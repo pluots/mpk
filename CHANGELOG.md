@@ -4,7 +4,7 @@
 
 ## [Unreleased] - ReleaseDate
 
-
+- Correct makefile autocompletions install targets
 
 ## [0.1.2] - 2023-01-08
 
