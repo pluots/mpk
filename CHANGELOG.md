@@ -4,6 +4,10 @@
 
 ## [Unreleased] - ReleaseDate
 
+
+
+## [0.1.2] - 2023-01-08
+
 - Added `aarch64-unknown-linux-gnu`, `aarch64-apple-darwin`, and
   `x86_64-pc-windows-gnu` targets
 
@@ -27,6 +31,7 @@ Initial release supporting:
 
 
 <!-- next-url -->
-[Unreleased]: https://github.com/pluots/msgpack-cli/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/pluots/msgpack-cli/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/pluots/msgpack-cli/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/pluots/msgpack-cli/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/pluots/msgpack-cli/compare/3fb7ec2a...v0.1.0
