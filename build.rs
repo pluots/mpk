@@ -20,11 +20,8 @@ fn build_shell_completion(cmd: &mut Command, outdir: &path::PathBuf) -> Result<(
         Shell::PowerShell,
         Shell::Zsh,
     ] {
-        let path = generate_to(
-            shell, cmd,       // We need to specify what generator to use
-            "msgpack", // We need to specify the bin name manually
-            outdir,    // We need to specify where to write
-        )?;
+        // We specify our generator, binary name, and output directory
+        let path = generate_to(shell, cmd, "mpk", outdir)?;
 
         println!("cargo:warning=completion file written to {path:?}");
     }
@@ -39,7 +36,7 @@ fn build_man_pages(cmd: Command, outdir: &Path) -> Result<(), std::io::Error> {
 
     man.render(&mut buffer)?;
 
-    let manpage_out = outdir.join("msgpack.1");
+    let manpage_out = outdir.join("mpk.1");
 
     println!("cargo:warning=manpage written to {manpage_out:?}");
 
@@ -61,7 +58,7 @@ fn main() -> Result<(), std::io::Error> {
     // Don't generate outputs if we're in debug mode
     if make_dist || profile.as_str() != "debug" {
         // Create a dummy file to help find the latest output
-        let stamp_path = Path::new(&outdir).join("msgpack-stamp");
+        let stamp_path = Path::new(&outdir).join("mpk-stamp");
         if let Err(err) = File::create(&stamp_path) {
             panic!("failed to write {}: {}", stamp_path.display(), err);
         }

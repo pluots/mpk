@@ -74,55 +74,55 @@ jobs:
       - name: Test make
         if: matrix.native == 'true' && matrix.os != 'windows-latest'
         run: |
-          cargo_outdir="$(find target -name msgpack-stamp -print0 | xargs -0 ls -t | head -n1 | xargs dirname)"
+          cargo_outdir="$(find target -name mpk-stamp -print0 | xargs -0 ls -t | head -n1 | xargs dirname)"
           echo outdir: "$cargo_outdir"
           
           mkdir testdir testdir/completion testdir/doc
           sh dist/create_install_makefile.sh
           mv Makefile.dist testdir/Makefile
-          mv "$cargo_outdir"/msgpack.1 testdir/doc
+          mv "$cargo_outdir"/mpk.1 testdir/doc
           mv "$cargo_outdir"/* testdir/completion
-          mv target/debug/msgpack testdir
+          mv target/debug/mpk testdir
           cd testdir
 
           echo running make install
           sudo make install
 
           echo testing files
-          echo testing msgpack presence
-          test -f /usr/local/bin/msgpack
-          echo testing msgpack.1 presence
-          test -f /usr/local/share/man/man1/msgpack.1
+          echo testing mpk presence
+          test -f /usr/local/bin/mpk
+          echo testing mpk.1 presence
+          test -f /usr/local/share/man/man1/mpk.1
 
           if [ "{{ matrix.os }}" = "ubuntu-latest" ]; then
-            echo testing msgpack.bash presence
-            test -f /usr/share/bash-completion/completions/msgpack.bash
+            echo testing mpk.bash presence
+            test -f /usr/share/bash-completion/completions/mpk.bash
           fi
           
           echo running make uninstall
           sudo make uninstall
           
           echo testing files
-          echo testing msgpack presence
-          test ! -f /usr/local/bin/msgpack
-          echo testing msgpack.1 presence
-          test ! -f /usr/local/share/man/man1/msgpack.1
+          echo testing mpk presence
+          test ! -f /usr/local/bin/mpk
+          echo testing mpk.1 presence
+          test ! -f /usr/local/share/man/man1/mpk.1
 
           if [ "{{ matrix.os }}" = "ubuntu-latest" ]; then
-            echo testing msgpack.bash presence
-            test ! -f /usr/share/bash-completion/completions/msgpack.bash
+            echo testing mpk.bash presence
+            test ! -f /usr/share/bash-completion/completions/mpk.bash
           fi
 
           mkdir -p ~/.local
           
           echo running install with prefix
           PREFIX="~/local" make install
-          echo testing msgpack presence
-          test -f ~/local/bin/msgpack
+          echo testing mpk presence
+          test -f ~/local/bin/mpk
           echo running uninstall with prefix
           PREFIX="~/local" make uninstall
-          echo testing msgpack presence
-          test ! -f ~/local/bin/msgpack
+          echo testing mpk presence
+          test ! -f ~/local/bin/mpk
 
   fmt:
     name: "Format (cargo fmt)"

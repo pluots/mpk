@@ -4,7 +4,9 @@
 
 ## [Unreleased] - ReleaseDate
 
-
+- Rename binary from `msgpack` to `mpk` at suggestion of the protocol's creator.
+  Name on Crates.io will rename `msgpack-cli`. Repository URL updated to
+  <https://github.com/pluots/mpk>.
 
 ## [0.1.4] - 2023-01-08
 
@@ -40,9 +42,9 @@ Initial release supporting:
 
 
 <!-- next-url -->
-[Unreleased]: https://github.com/pluots/msgpack-cli/compare/v0.1.4...HEAD
-[0.1.4]: https://github.com/pluots/msgpack-cli/compare/v0.1.3...v0.1.4
-[0.1.3]: https://github.com/pluots/msgpack-cli/compare/v0.1.2...v0.1.3
-[0.1.2]: https://github.com/pluots/msgpack-cli/compare/v0.1.1...v0.1.2
-[0.1.1]: https://github.com/pluots/msgpack-cli/compare/v0.1.0...v0.1.1
-[0.1.0]: https://github.com/pluots/msgpack-cli/compare/3fb7ec2a...v0.1.0
+[Unreleased]: https://github.com/pluots/mpk/compare/v0.1.4...HEAD
+[0.1.4]: https://github.com/pluots/mpk/compare/v0.1.3...v0.1.4
+[0.1.3]: https://github.com/pluots/mpk/compare/v0.1.2...v0.1.3
+[0.1.2]: https://github.com/pluots/mpk/compare/v0.1.1...v0.1.2
+[0.1.1]: https://github.com/pluots/mpk/compare/v0.1.0...v0.1.1
+[0.1.0]: https://github.com/pluots/mpk/compare/3fb7ec2a...v0.1.0

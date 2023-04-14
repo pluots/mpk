@@ -21,7 +21,7 @@ fn test_tofrom_file() {
     let mut outfile = NamedTempFile::new().unwrap();
     infile.write_all(JSON.as_bytes()).unwrap();
 
-    let mut cmd = Command::cargo_bin("msgpack").unwrap();
+    let mut cmd = Command::cargo_bin("mpk").unwrap();
 
     cmd.arg(infile.path())
         .arg("--output")
@@ -37,11 +37,11 @@ fn test_tofrom_file() {
 #[test]
 fn test_tofrom_stream() {
     // Try both directions
-    let mut cmd = assert_cmd::Command::cargo_bin("msgpack").unwrap();
+    let mut cmd = assert_cmd::Command::cargo_bin("mpk").unwrap();
     cmd.arg("--to-msgpack").write_stdin(JSON);
     cmd.assert().success().stdout(BYTES.as_slice());
 
-    let mut cmd = assert_cmd::Command::cargo_bin("msgpack").unwrap();
+    let mut cmd = assert_cmd::Command::cargo_bin("mpk").unwrap();
     cmd.arg("--to-json").write_stdin(BYTES);
     // We end with a newline so need to use contains
     cmd.assert().success().stdout(pred_str::contains(JSON));
@@ -50,7 +50,7 @@ fn test_tofrom_stream() {
 #[test]
 fn test_text_input() {
     // Just test everything else without trying much
-    let mut cmd = assert_cmd::Command::cargo_bin("msgpack").unwrap();
+    let mut cmd = assert_cmd::Command::cargo_bin("mpk").unwrap();
     cmd.arg("--to-msgpack").arg("--input").arg(JSON);
     cmd.assert().success().stdout(BYTES.as_slice());
 
@@ -60,11 +60,11 @@ fn test_text_input() {
     }
     let hex_str = str::from_utf8(&buf).unwrap();
 
-    let mut cmd = assert_cmd::Command::cargo_bin("msgpack").unwrap();
+    let mut cmd = assert_cmd::Command::cargo_bin("mpk").unwrap();
     cmd.arg("--to-json").arg("--input").arg(hex_str);
     cmd.assert().success().stdout(pred_str::contains(JSON));
 
-    let mut cmd = assert_cmd::Command::cargo_bin("msgpack").unwrap();
+    let mut cmd = assert_cmd::Command::cargo_bin("mpk").unwrap();
     cmd.arg("--to-msgpack")
         .arg("--input")
         .arg(JSON)

@@ -28,16 +28,16 @@ BINSOURCE= .
 MANSOURCE = doc
 COMPLETESOURCE = completion
 else
-builddir=$(shell find target -name msgpack-stamp -print0 | xargs -0 ls -t | head -n1 | xargs dirname)
+builddir=$(shell find target -name mpk-stamp -print0 | xargs -0 ls -t | head -n1 | xargs dirname)
 BINSOURCE = target/release
 MANSOURCE = $(builddir)
 COMPLETESOURCE = $(builddir)
 endif
 
 
-all: msgpack
+all: mpk
 
-msgpack:
+mpk:
 ifndef CARGO
     $(error "cargo is not available, visit rustup.rs or install with your system package manager")
 endif
@@ -45,7 +45,7 @@ endif
 	cargo build --release
 
 
-install: msgpack
+install: mpk
 ifeq ($(OS),Windows_NT)
 	$(error install does not yet work on Windows)
 	exit 1
@@ -58,23 +58,23 @@ endif
 
 	install -d ${BINDEST}
 	install -d ${MANDEST}
-	install ${BINSOURCE}/msgpack ${BINDEST}/msgpack
-	install -m 644 ${MANSOURCE}/msgpack.1 ${MANDEST}/msgpack.1
+	install ${BINSOURCE}/mpk ${BINDEST}/mpk
+	install -m 644 ${MANSOURCE}/mpk.1 ${MANDEST}/mpk.1
 
 ifeq ($(INSTALL_COMPLETIONS),true)
 	INSTALLEDAC=0; \
 	if [ -d "${COMPDEST_BASH}" ]; then \
-		install "${COMPLETESOURCE}/msgpack.bash" "${COMPDEST_BASH}/msgpack"; \
+		install "${COMPLETESOURCE}/mpk.bash" "${COMPDEST_BASH}/mpk"; \
 		echo installed bash autocomplete; \
 		INSTALLEDAC=1; \
 	fi; \
 	if [ -d "${COMPDEST_FISH}" ]; then \
-		install "${COMPLETESOURCE}/msgpack.fish" "${COMPDEST_FISH}/msgpack.fish"; \
+		install "${COMPLETESOURCE}/mpk.fish" "${COMPDEST_FISH}/mpk.fish"; \
 		echo installed fish autocomplete; \
 		INSTALLEDAC=1; \
 	fi; \
 	if [ -d "${COMPDEST_ZSH}" ]; then \
-		install "${COMPLETESOURCE}/_msgpack" "${COMPDEST_ZSH}/_msgpack"; \
+		install "${COMPLETESOURCE}/_mpk" "${COMPDEST_ZSH}/_mpk"; \
 		echo installed zsh autocomplete; \
 		INSTALLEDAC=1; \
 	fi; \
@@ -98,8 +98,8 @@ endif
 
 uninstall:
 	$(info cleaning install directories)
-	rm -f ${BINDEST}/msgpack
-	rm -f ${MANDEST}/msgpack.1
-	rm -f ${COMPDEST_BASH}/msgpack
-	rm -f ${COMPDEST_FISH}/msgpack.fish
-	rm -f ${COMPDEST_ZSH}/_msgpack
+	rm -f ${BINDEST}/mpk
+	rm -f ${MANDEST}/mpk.1
+	rm -f ${COMPDEST_BASH}/mpk
+	rm -f ${COMPDEST_FISH}/mpk.fish
+	rm -f ${COMPDEST_ZSH}/_mpk
