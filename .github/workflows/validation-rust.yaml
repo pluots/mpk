@@ -11,7 +11,7 @@ name: Rust Validation
 env:
   RUSTDOCFLAGS: -D warnings
   RUSTFLAGS: "-D warnings"
-  CARGO_UNSTABLE_SPARSE_REGISTRY: true
+  CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
   TARGET_DIR: ./target
 
 jobs:
@@ -45,7 +45,7 @@ jobs:
             target: x86_64-pc-windows-gnu
             native: true
 
-    name: "Check/test ${{ matrix.name }}. Testing: ${{ matrix.native }}"
+    name: "Check ${{ matrix.name }}. test: ${{ matrix.native }}"
     runs-on: ${{ matrix.os }}
     env:
       MAKE_DIST: "1"
@@ -60,22 +60,25 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - uses: dtolnay/rust-toolchain@nightly
+      - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{matrix.target}}
-      - name: Run check
-        run: cargo check --all-features --all-targets --target ${{ matrix.target }}
+      - name: Run clippy
+        run: cargo clippy --all-features --all-targets --target ${{ matrix.target }} -- -D warnings
       - name: Run tests
-        if: matrix.native == 'true'
+        if: matrix.native
         run: cargo test --target ${{ matrix.target }}
       - name: Build binary
-        if: matrix.native == 'true' && matrix.os != 'windows-latest'
+        if: matrix.native && matrix.os != 'windows-latest'
         run: cargo build
       - name: Test make
-        if: matrix.native == 'true' && matrix.os != 'windows-latest'
+        if: matrix.native && matrix.os != 'windows-latest'
         run: |
           cargo_outdir="$(find target -name mpk-stamp -print0 | xargs -0 ls -t | head -n1 | xargs dirname)"
           echo outdir: "$cargo_outdir"
+          compdir_bash="/usr/share/bash-completion/completions"
+          compdir_fish="/usr/share/fish/vendor_completions.d"
+          compdir_zsh="/usr/share/zsh/vendor-completions"
           
           mkdir testdir testdir/completion testdir/doc
           sh dist/create_install_makefile.sh
@@ -85,43 +88,65 @@ jobs:
           mv target/debug/mpk testdir
           cd testdir
 
-          echo running make install
+          echo -e '\n==== running sudo make install ===='
           sudo make install
+          echo '==== finished install ===='
 
-          echo testing files
-          echo testing mpk presence
+          echo testing files...
+          echo testing mpk presence...
           test -f /usr/local/bin/mpk
-          echo testing mpk.1 presence
+          echo testing mpk.1 presence...
           test -f /usr/local/share/man/man1/mpk.1
 
-          if [ "{{ matrix.os }}" = "ubuntu-latest" ]; then
-            echo testing mpk.bash presence
-            test -f /usr/share/bash-completion/completions/mpk.bash
+          if [ -d "$compdir_bash" ]; then
+            echo testing mpk bash presence...
+            test -f "${compdir_bash}/mpk"
+          fi
+          if [ -d "$compdir_fish" ]; then
+            echo testing mpk fish presence...
+            test -f "${compdir_fish}/mpk.fish"
+          fi
+          if [ -d "$compdir_zsh" ]; then
+            echo testing mpk zsh presence...
+            test -f "${compdir_zsh}/_mpk"
           fi
           
-          echo running make uninstall
+          echo -e '\n==== running sudo make uninstall ===='
           sudo make uninstall
+          echo '==== finished uninstall ===='
           
-          echo testing files
-          echo testing mpk presence
+          echo testing mpk removal...
           test ! -f /usr/local/bin/mpk
-          echo testing mpk.1 presence
+          echo testing mpk.1 removal...
           test ! -f /usr/local/share/man/man1/mpk.1
 
-          if [ "{{ matrix.os }}" = "ubuntu-latest" ]; then
-            echo testing mpk.bash presence
-            test ! -f /usr/share/bash-completion/completions/mpk.bash
+          if [ -d "$compdir_bash" ]; then
+            echo testing mpk bash removal...
+            test ! -f "${compdir_bash}/mpk"
+          fi
+          if [ -d "$compdir_fish" ]; then
+            echo testing mpk fish removal...
+            test ! -f "${compdir_fish}/mpk.fish"
+          fi
+          if [ -d "$compdir_zsh" ]; then
+            echo testing mpk zsh removal...
+            test ! -f "${compdir_zsh}/_mpk"
           fi
 
           mkdir -p ~/.local
           
-          echo running install with prefix
-          PREFIX="~/local" make install
-          echo testing mpk presence
+          echo -e '\n==== running install with prefix ===='
+          make install PREFIX="~/local" 
+          echo '==== finished install ===='
+
+          echo testing mpk presence... 
           test -f ~/local/bin/mpk
-          echo running uninstall with prefix
-          PREFIX="~/local" make uninstall
-          echo testing mpk presence
+
+          echo -e '\n==== running uninstall with prefix ===='
+          make uninstall PREFIX="~/local" 
+          echo '==== finished uninstall ===='
+
+          echo testing mpk removal...
           test ! -f ~/local/bin/mpk
 
   fmt:
@@ -143,25 +168,6 @@ jobs:
           components: rustfmt
       - run: cargo fmt --all -- --check
 
-  clippy:
-    name: "Clippy (cargo clippy)"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - uses: dtolnay/rust-toolchain@nightly
-        with:
-          components: clippy
-      - run: cargo clippy --all-features --all-targets -- -D warnings
-
   doc:
     name: "Docs (cargo doc)"
     runs-on: ubuntu-latest
@@ -178,3 +184,12 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - uses: dtolnay/rust-toolchain@nightly
       - run: cargo doc --document-private-items
+
+  outdated:
+    name: Outdated
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/install@cargo-outdated
+      - run: cargo outdated --workspace --exit-code 1

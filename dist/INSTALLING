@@ -11,7 +11,7 @@ $ # uninstall the program
 $ make uninstall
 
 $ # install or uninstall in a specific location
-$ PREFIX="~/local" make install
+$ make install PREFIX="~/local"
 
 Alternatively, just copy the binary to your desired location
 
