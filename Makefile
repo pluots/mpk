@@ -16,11 +16,12 @@ ifneq ($(DESTDIR),)
 INSTALL_COMPLETIONS=false
 endif
 
-COMPDEST_PFX=/usr/share
-COMPDEST_BASH=${COMPDEST_PFX}/bash-completion/completions
-COMPDEST_FISH=${COMPDEST_PFX}/fish/vendor_completions.d
-COMPDEST_ZSH=${COMPDEST_PFX}/zsh/vendor-completions
+COMPDIR_PFX=/usr/share
+COMPDIR_BASH=${COMPDIR_PFX}/bash-completion/completions
+COMPDIR_FISH=${COMPDIR_PFX}/fish/vendor_completions.d
+COMPDIR_ZSH=${COMPDIR_PFX}/zsh/vendor-completions
 
+# Install from a prebuilt release, rather than building
 USE_RELEASED_INSTALL=0
 
 ifeq ($(USE_RELEASED_INSTALL),1)
@@ -39,7 +40,7 @@ all: mpk
 
 mpk:
 ifndef CARGO
-    $(error "cargo is not available, visit rustup.rs or install with your system package manager")
+	$(error "cargo is not available, visit rustup.rs or install with your system package manager")
 endif
 	$(info building...)
 	cargo build --release
@@ -52,34 +53,36 @@ ifeq ($(OS),Windows_NT)
 endif
 	
 	$(info installing binary, manpages, and shell completion scripts)
-	$(info binary source: ${BINSOURCE})
-	$(info manpage source: ${MANSOURCE})
-	$(info completion source: ${COMPLETESOURCE})
+	$(info using prefix ${PREFIX})
 
 	install -d ${BINDEST}
 	install -d ${MANDEST}
+	
+	$(info copying binary: ${BINSOURCE} -> ${BINDEST})
 	install ${BINSOURCE}/mpk ${BINDEST}/mpk
+	
+	$(info copying manpage: ${MANSOURCE} -> ${MANDEST})
 	install -m 644 ${MANSOURCE}/mpk.1 ${MANDEST}/mpk.1
 
 ifeq ($(INSTALL_COMPLETIONS),true)
-	INSTALLEDAC=0; \
-	if [ -d "${COMPDEST_BASH}" ]; then \
-		install "${COMPLETESOURCE}/mpk.bash" "${COMPDEST_BASH}/mpk"; \
-		echo installed bash autocomplete; \
+	@INSTALLEDAC=0; \
+	if [ -d "${COMPDIR_BASH}" ]; then \
+		echo 'copying bash completion: "${COMPLETESOURCE}" -> "${COMPDIR_BASH}"'; \
+		install "${COMPLETESOURCE}/mpk.bash" "${COMPDIR_BASH}/mpk"; \
 		INSTALLEDAC=1; \
 	fi; \
-	if [ -d "${COMPDEST_FISH}" ]; then \
-		install "${COMPLETESOURCE}/mpk.fish" "${COMPDEST_FISH}/mpk.fish"; \
-		echo installed fish autocomplete; \
+	if [ -d "${COMPDIR_FISH}" ]; then \
+		echo 'copying fish completion: "${COMPLETESOURCE}" -> "${COMPDIR_FISH}"'; \
+		install "${COMPLETESOURCE}/mpk.fish" "${COMPDIR_FISH}/mpk.fish"; \
 		INSTALLEDAC=1; \
 	fi; \
-	if [ -d "${COMPDEST_ZSH}" ]; then \
-		install "${COMPLETESOURCE}/_mpk" "${COMPDEST_ZSH}/_mpk"; \
-		echo installed zsh autocomplete; \
+	if [ -d "${COMPDIR_ZSH}" ]; then \
+		echo 'copying zsh completion: "${COMPLETESOURCE}" -> "${COMPDIR_ZSH}"'; \
+		install "${COMPLETESOURCE}/_mpk" "${COMPDIR_ZSH}/_mpk"; \
 		INSTALLEDAC=1; \
 	fi; \
 	if [ "$${INSTALLEDAC}" = "0" ]; then \
-		echo did not find any directorys to install autocompletion scripts; \
+		echo did not find any directories to install autocompletion scripts; \
 	fi
 
 else
@@ -90,7 +93,7 @@ endif
 
 clean:
 ifndef CARGO
-    $(error "cargo is not available, visit rustup.rs or install with your system package manager")
+	$(error "cargo is not available, visit rustup.rs or install with your system package manager")
 endif
 	$(info cleaning target directory)
 	cargo clean
@@ -100,6 +103,6 @@ uninstall:
 	$(info cleaning install directories)
 	rm -f ${BINDEST}/mpk
 	rm -f ${MANDEST}/mpk.1
-	rm -f ${COMPDEST_BASH}/mpk
-	rm -f ${COMPDEST_FISH}/mpk.fish
-	rm -f ${COMPDEST_ZSH}/_mpk
+	rm -f ${COMPDIR_BASH}/mpk
+	rm -f ${COMPDIR_FISH}/mpk.fish
+	rm -f ${COMPDIR_ZSH}/_mpk
