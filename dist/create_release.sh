@@ -49,21 +49,21 @@ cp CHANGELOG.md.dist "${staging}/doc/CHANGELOG.md"
 cp dist/INSTALLING "${staging}/"
 
 # Copy manpages
-cp "${assetdir}/msgpack.1" "${staging}/doc"
+cp "${assetdir}/mpk.1" "${staging}/doc"
 
-completion_scripts="_msgpack _msgpack.ps1 msgpack.bash msgpack.elv msgpack.fish"
+completion_scripts="_mpk _mpk.ps1 mpk.bash mpk.elv mpk.fish"
 for script in $completion_scripts; do
     cp "${assetdir}/${script}" "${staging}/completion"
 done
 
 if [ "$machine" = "cygwin" ]; then
-    cp "${builddir}/msgpack.exe" "${staging}/"
-    sha256sum staging/msgpack.exe | perl -pe "s/${staging}\///" >> "${staging}/sha256sum"
+    cp "${builddir}/mpk.exe" "${staging}/"
+    sha256sum staging/mpk.exe | perl -pe "s/${staging}\///" >> "${staging}/sha256sum"
     7z a "${staging}.zip" "$staging"
     echo "ASSET=${staging}.zip" >> "$GITHUB_ENV"
 else
-    cp "${builddir}/msgpack" "$staging/"
-    shasum -a 256 staging/msgpack | perl -pe "s/${staging}\///" >> "${staging}/sha256sum"
+    cp "${builddir}/mpk" "$staging/"
+    shasum -a 256 staging/mpk | perl -pe "s/${staging}\///" >> "${staging}/sha256sum"
     tar czf "${staging}.tar.gz" "$staging"
     echo "ASSET=${staging}.tar.gz" >> "$GITHUB_ENV"
 fi

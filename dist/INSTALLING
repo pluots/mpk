@@ -1,4 +1,4 @@
-msgpack: CLI MessagePack utility
+mpk: CLI MessagePack utility
 
 To install this program, run 'make install' and to remove, run
 'make uninstall'. To install to a different location, specify the `PREFIX`
@@ -18,3 +18,8 @@ Alternatively, just copy the binary to your desired location
 If you would like, you can validate binaries before running:
 
 $ shasum -a 256 -c sha256sum
+
+Verify the install completed successfully
+
+$ mpk --version
+mpk-cli 0.1.0 # note: version will vary

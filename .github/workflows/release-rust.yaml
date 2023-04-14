@@ -98,7 +98,7 @@ jobs:
           echo '\nls:' && ls
 
           # Find the output directory with the latest timestamp
-          cargo_outdir="$(find "${{ env.TARGET_DIR }}" -name msgpack-stamp -print0 | xargs -0 ls -t | head -n1 | xargs dirname)"
+          cargo_outdir="$(find "${{ env.TARGET_DIR }}" -name mpk-stamp -print0 | xargs -0 ls -t | head -n1 | xargs dirname)"
           ref_name=${GITHUB_REF##*/}
 
           # Remove leading 'v' for use where needed
@@ -106,7 +106,7 @@ jobs:
           echo "Ref name: '$ref_name'"
           echo "Ref name stripped: '$ref_name_stripped'"
 
-          staging_dir="msgpack-${ref_name}-${{ matrix.target }}"
+          staging_dir="mpk-${ref_name}-${{ matrix.target }}"
           echo "STAGING_DIR=$staging_dir" >> "$GITHUB_ENV"
           echo "RELEASE_VERSION=$ref_name_stripped" >> "$GITHUB_ENV"
 
@@ -144,7 +144,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         env:
-          GITHUB_REPOSITORY: pluots/msgpack
+          GITHUB_REPOSITORY: pluots/mpk
         with:
           body_path: RELNOTES.md
           # note you'll typically need to create a personal access token

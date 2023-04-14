@@ -3,9 +3,9 @@ name = "msgpack-cli"
 version = "0.1.4"
 edition = "2021"
 license = "Apache-2.0"
-repository = "https://github.com/pluots/msgpack-cli"
+repository = "https://github.com/pluots/mpk-cli"
 description = "A command line utility that converts between JSON and MessagePack"
-keywords = ["cli", "msgpack"]
+keywords = ["cli", "msgpack", "mpk", "messagepack"]
 categories = ["command-line-utilities"]
 
 [badges]
@@ -16,7 +16,7 @@ strip = "symbols"
 lto = "fat"
 
 [[bin]]
-name = "msgpack"
+name = "mpk"
 path = "src/main.rs"
 
 [dependencies]

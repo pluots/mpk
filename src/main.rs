@@ -1,7 +1,10 @@
 //! MessagePack command line interface
 //!
 //! Install with `cargo install msgpack-cli` or get a prebuilt binary on the
-//! releases page: <https://github.com/pluots/msgpack-cli/releases>
+//! releases page: <https://github.com/pluots/mpk/releases>. The binary will be
+//! usable by the name `mpk`.
+//!
+//! See the [README](https://github.com/pluots/mpk) for CLI usage instructions.
 
 #![warn(clippy::pedantic)]
 #![warn(clippy::cargo)]
