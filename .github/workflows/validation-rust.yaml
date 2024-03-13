@@ -50,19 +50,9 @@ jobs:
     env:
       MAKE_DIST: "1"
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{matrix.target}}
+      - uses: actions/checkout@v4
+      - run: rustup default 1.74 && rustup component add clippy && rustup target add ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
       - name: Run clippy
         run: cargo clippy --all-features --all-targets --target ${{ matrix.target }} -- -D warnings
       - name: Run tests
@@ -153,36 +143,18 @@ jobs:
     name: "Format (cargo fmt)"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - uses: dtolnay/rust-toolchain@nightly
-        with:
-          components: rustfmt
+      - uses: actions/checkout@v4
+      - run: rustup default nightly && rustup component add rustfmt
+      - uses: Swatinem/rust-cache@v2
       - run: cargo fmt --all -- --check
 
   doc:
     name: "Docs (cargo doc)"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - uses: dtolnay/rust-toolchain@nightly
+      - uses: actions/checkout@v4
+      - run: rustup default nightly
+      - uses: Swatinem/rust-cache@v2
       - run: cargo doc --document-private-items
 
   outdated:
@@ -190,6 +162,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v3
-      - uses: dtolnay/install@cargo-outdated
+      - uses: actions/checkout@v4
+      - uses: taiki-e/install-action@v2
+        with:
+            tool: cargo-outdated
       - run: cargo outdated --workspace --exit-code 1
