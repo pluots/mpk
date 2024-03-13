@@ -4,6 +4,8 @@
 
 ## [Unreleased] - ReleaseDate
 
+- Correct link to the repository in `Cargo.toml`
+  ([#7](https://github.com/pluots/mpk/pull/7))
 
 
 ## [0.2.1] - 2023-04-14
