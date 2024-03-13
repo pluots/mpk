@@ -4,6 +4,10 @@
 
 ## [Unreleased] - ReleaseDate
 
+
+
+## [0.2.2] - 2024-03-13
+
 - Correct link to the repository in `Cargo.toml`
   ([#7](https://github.com/pluots/mpk/pull/7))
 
@@ -48,7 +52,8 @@ Initial release supporting:
 
 
 <!-- next-url -->
-[Unreleased]: https://github.com/pluots/msgpack-cli/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/pluots/msgpack-cli/compare/v0.2.2...HEAD
+[0.2.2]: https://github.com/pluots/msgpack-cli/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/pluots/mpk/compare/v0.1.4...v0.2.1
 [0.1.4]: https://github.com/pluots/mpk/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/pluots/mpk/compare/v0.1.2...v0.1.3
