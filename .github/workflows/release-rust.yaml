@@ -53,25 +53,12 @@ jobs:
       TARGET_FLAGS: ""
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - uses: dtolnay/rust-toolchain@nightly
-        with:
-          targets: ${{matrix.target}}
-          
+      - uses: actions/checkout@v4
+      - run: rustup default nightly && rustup target add ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
       - name: Configure cross
         if: matrix.cargo == 'cross'
-        run: |
-          cargo install cross
-
+        uses: taiki-e/install-action@cross
       - name: Show commands
         run: |
           echo pwd:
@@ -81,7 +68,6 @@ jobs:
           echo "cargo command is: ${{ matrix.cargo }}"
           echo "target flags are: ${{ env.TARGET_FLAGS }}"
           echo "target dir is: ${{ env.TARGET_DIR }}"
-
         # Perform build
       - name: Build binary
         run: ${{ matrix.cargo }} build --release --verbose --target ${{ matrix.target }}
